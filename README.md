@@ -11,7 +11,7 @@ A lisp dialect that compiles to sqf.
 - [x] arrays
 - [ ] for
 - [ ] while
-- [ ] defn
+- [x] fn
 - [ ] foreach
 - [ ] case
 - [ ] exitwith

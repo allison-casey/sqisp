@@ -45,7 +45,9 @@ text = """
     (if true "Hello" "World"))
 
 
-(def my-val ( my-func "hello" "world" 24.3 ))
+(def my_val ( my_func "hello" "world" 24.3 ))
+
+(fn [a b c] (hint (str [a b c])))
 
 """
 
@@ -188,6 +190,25 @@ class SQFASTCompiler(object):
         value = self.compile_if_not_str(value)
 
         return f"{name} = {value}"
+
+    @special("fn", [FORM, many(FORM)])
+    def compile_fn_expression(self, expr, root, args, body):
+        if not isinstance(args, SQFList):
+            raise SyntaxError("args must be a list")
+
+        sargs = map(self.compile_if_not_str, args)
+        sargs = ' '.join(f'"{arg}"' for arg in args)
+
+        buffer = []
+        buffer += [ "{" ]
+        buffer += [ f"params [{sargs}];" ]
+        buffer += [self.compile_if_not_str(expression) for expression in body]
+        buffer += ["}"]
+        
+        # buffer += [self.compile_if_not_str(body)]
+
+
+        return " ".join(buffer)
 
     @special("do", [many(FORM)])
     def compile_do_expression(self, expr, root, body):
