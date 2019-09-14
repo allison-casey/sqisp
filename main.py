@@ -32,6 +32,7 @@ text = """
 (= "hello" (if true "hello" "world"))
 (def some_num (+ 2 -5 (/ 2.4 30 3.3) (- 20 33)))
 
+(def some_arr [1 2 3 4 5 6])
 (if (or (>= some_num 223) (= (% some_num 2) 0))
     (str some_num)
     (if true "Hello" "World"))
@@ -182,7 +183,6 @@ class SQFASTCompiler(object):
     def compile_do_expression(self, expr, root, body):
         return "\n".join(map(self.compile, body))
 
-
     @special("str", [FORM])
     def compile_str_expression(self, expr, root, args):
         return f"{root} {self.compile(args)}"
@@ -205,6 +205,10 @@ class SQFASTCompiler(object):
     @builds_model(SQFSymbol)
     def compile_symbol(self, symbol):
         return str(symbol)
+
+    @builds_model(SQFList)
+    def compile_list(self, lst):
+        return ', '.join(self.compile(value) for value in lst)
 
     @builds_model(SQFInteger)
     @builds_model(SQFFloat)
