@@ -16,6 +16,5 @@ A lisp dialect that compiles to sqf.
 - [ ] case
 - [ ] exitwith
 - [ ] waituntil
-- [ ] case
 - [ ] default
 - [x] function call syntax
