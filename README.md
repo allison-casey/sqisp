@@ -2,6 +2,11 @@
 
 A lisp dialect that compiles to sqf.
 
+## Features
+- [ ] macros
+- [ ] keywords
+- [ ] name mangling
+
 ## Expressions
 - [x] if 
 - [x] def
