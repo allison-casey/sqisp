@@ -8,6 +8,7 @@ A lisp dialect that compiles to sqf.
 - [x] basic math expressions [+, -, *, /, %]
 - [x] do 
 - [x] logical operators [and, or, =, <, <=, >, >=, !=]
+- [ ] arrays
 - [ ] for
 - [ ] while
 - [ ] defn
