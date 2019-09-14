@@ -1,4 +1,5 @@
 import copy
+import my_lang.types as types
 
 from pprint import pprint
 from my_lang.lexer import lexer
@@ -21,6 +22,8 @@ from itertools import tee
 from math import isinf
 
 
+
+
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
@@ -28,14 +31,21 @@ def pairwise(iterable):
     return zip(a, b)
 
 
+types.load_types('types')
+
 text = """
 (= "hello" (if true "hello" "world"))
 (def some_num (+ 2 -5 (/ 2.4 30 3.3) (- 20 33)))
+
+(select (count (allUnits)) 2)
 
 (def some_arr [1 2 3 4 5 6])
 (if (or (>= some_num 223) (= (% some_num 2) 0))
     (str some_num)
     (if true "Hello" "World"))
+
+
+(def my-val ( my-func "hello" "world" 24.3 ))
 
 """
 
@@ -179,7 +189,6 @@ class SQFASTCompiler(object):
 
         return f"{name} = {value}"
 
-
     @special("do", [many(FORM)])
     def compile_do_expression(self, expr, root, body):
         return "\n".join(map(self.compile, body))
@@ -216,6 +225,19 @@ class SQFASTCompiler(object):
     def compile_integer(self, integer):
         return str(integer)
 
+    def compile_function_call(self, root, args):
+        sroot = self.compile_if_not_str(root)
+        sargs = [self.compile_if_not_str(arg) for arg in args]
+        if types.is_builtin(sroot):
+            if len(args) == 0:
+                return sroot
+            elif len(args) == 1:
+                return f"( {sroot} {sargs[0]} )"
+            elif len(args) == 2:
+                return f"( {sargs[0]} {sroot} {sargs[1]} )"
+        else:
+            return f"[{', '.join(sargs)}] call {sroot}"
+
     @builds_model(SQFExpression)
     def compile_expression(self, expr):
         if not expr:
@@ -232,6 +254,8 @@ class SQFASTCompiler(object):
                 except NoParseError as e:
                     raise SyntaxError("Parse error for form")
                 return build_method(self, expr, sroot, *parse_tree)
+            else:
+                return self.compile_function_call(sroot, args)
 
 
 compiler = SQFASTCompiler()
@@ -244,3 +268,4 @@ print("Compiled SQF:", '"""', compiled_sqf, '"""', sep="\n")
 
 with open("test.sqf", "w") as f:
     f.write(compiled_sqf)
+
