@@ -177,15 +177,16 @@ class SQFASTCompiler(object):
         name = self.compile_if_not_str(name)
         value = self.compile_if_not_str(value)
 
-        return f"{name} = {value};"
+        return f"{name} = {value}"
+
 
     @special("do", [many(FORM)])
     def compile_do_expression(self, expr, root, body):
         return "\n".join(map(self.compile, body))
 
-    @special("str", [FORM])
-    def compile_str_expression(self, expr, root, args):
-        return f"{root} {self.compile(args)}"
+    # @special("str", [FORM])
+    # def compile_str_expression(self, expr, root, args):
+    #     return f"{root} {self.compile(args)}"
 
     @special("if", [FORM, FORM, maybe(FORM)])
     def compile_if(self, expr, root, cond, body, else_expr):
@@ -208,7 +209,7 @@ class SQFASTCompiler(object):
 
     @builds_model(SQFList)
     def compile_list(self, lst):
-        return ', '.join(self.compile(value) for value in lst)
+        return f"[{', '.join(map(self.compile, lst))}]"
 
     @builds_model(SQFInteger)
     @builds_model(SQFFloat)
