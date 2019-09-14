@@ -18,4 +18,4 @@ A lisp dialect that compiles to sqf.
 - [ ] waituntil
 - [ ] case
 - [ ] default
-- [ ] function call syntax
+- [x] function call syntax
