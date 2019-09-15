@@ -55,6 +55,9 @@ text = """
 (for [i 0 10]
     (hint i)
     (hint "Hello For Loop!"))
+
+(for [i 0 10 2]
+    (hint i))
 """
 
 tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
@@ -200,7 +203,7 @@ class SQFASTCompiler(object):
 
     def _compile_implicit_do(self, body):
         expr = SQFExpression([SQFSymbol("do")] + body)
-        root = SQFSymbol('do')
+        root = SQFSymbol("do")
         return self.compile_do_expression(expr, root, body, newline=False)
 
     @special("fn", [FORM, many(FORM)])
@@ -210,7 +213,6 @@ class SQFASTCompiler(object):
 
         sargs = map(self.compile_if_not_str, args)
         sargs = ", ".join(f'"{arg}"' for arg in args)
-
 
         buffer = []
         buffer += ["{"]
@@ -244,14 +246,20 @@ class SQFASTCompiler(object):
         if len(cond) not in range(3, 4 + 1):
             raise SyntaxError(f"for takes 3 to 4 arguments. {len(cond)} given")
 
-        iterator = cond[0]
+        cond = [self.compile_if_not_str(val) for val in cond]
+
+        iterator = mangle(cond[0])
         start = cond[1]
         end = cond[2]
         step = cond[3] if len(cond) == 4 else None
 
-        print(iterator, start, end, step)
+        body = self._compile_implicit_do(body)
 
-        return ""
+        buffer = []
+        buffer += [f"for \"{iterator}\" from {start} to {end} {f'step {step} ' if step else ''}do"]
+        buffer += ["{", body, "}"]
+
+        return ' '.join(buffer)
 
     @builds_model(SQFString)
     def compile_string(self, string):

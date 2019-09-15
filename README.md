@@ -6,6 +6,7 @@ A lisp dialect that compiles to sqf.
 - [ ] macros
 - [ ] keywords
 - [x] name mangling
+- [ ] private by default
 
 ## Expressions
 - [x] if 
@@ -14,7 +15,7 @@ A lisp dialect that compiles to sqf.
 - [x] do 
 - [x] logical operators [and, or, =, <, <=, >, >=, !=]
 - [x] arrays
-- [ ] for
+- [x] for
 - [ ] while
 - [x] fn
 - [ ] foreach
