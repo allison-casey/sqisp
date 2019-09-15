@@ -2,6 +2,7 @@ import copy
 import arma_lisp.types as types
 
 from pprint import pprint
+from arma_lisp import mangle
 from arma_lisp.lexer import lexer
 from arma_lisp.models import *
 from arma_lisp.parser import parser, ParserState
@@ -22,8 +23,6 @@ from itertools import tee
 from math import isinf
 
 
-
-
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
@@ -31,7 +30,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 
-types.load_types('types')
+types.load_types("types")
 
 text = """
 (= "hello" (if true "hello" "world"))
@@ -47,13 +46,15 @@ text = """
 
 (def my_val ( my_func "hello" "world" 24.3 ))
 
-(fn [a b c]
+(def even? (fn [val] (= (% val 2) 0)))
+
+(fn [a, b,,, c]
     (hint (str [a b c]))
     (hint "sub dog"))
 
 """
 
-tokens = parser.parse(lexer.lex(text), state=ParserState())
+tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
 ast = SQFExpression([SQFSymbol("do")] + tokens)
 
 
@@ -200,16 +201,15 @@ class SQFASTCompiler(object):
             raise SyntaxError("args must be a list")
 
         sargs = map(self.compile_if_not_str, args)
-        sargs = ' '.join(f'"{arg}"' for arg in args)
+        sargs = " ".join(f'"{arg}"' for arg in args)
 
         buffer = []
-        buffer += [ "{" ]
-        buffer += [ f"params [{sargs}];" ]
+        buffer += ["{"]
+        buffer += [f"params [{sargs}];"]
         buffer += [self.compile_if_not_str(expression) for expression in body]
         buffer += ["}"]
-        
-        # buffer += [self.compile_if_not_str(body)]
 
+        # buffer += [self.compile_if_not_str(body)]
 
         return " ".join(buffer)
 
@@ -238,7 +238,7 @@ class SQFASTCompiler(object):
 
     @builds_model(SQFSymbol)
     def compile_symbol(self, symbol):
-        return str(symbol)
+        return mangle(symbol)
 
     @builds_model(SQFList)
     def compile_list(self, lst):
@@ -292,4 +292,3 @@ print("Compiled SQF:", '"""', compiled_sqf, '"""', sep="\n")
 
 with open("test.sqf", "w") as f:
     f.write(compiled_sqf)
-

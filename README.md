@@ -5,7 +5,7 @@ A lisp dialect that compiles to sqf.
 ## Features
 - [ ] macros
 - [ ] keywords
-- [ ] name mangling
+- [x] name mangling
 
 ## Expressions
 - [x] if 
