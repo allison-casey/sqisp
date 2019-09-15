@@ -16,7 +16,7 @@ A lisp dialect that compiles to sqf.
 - [x] logical operators [and, or, =, <, <=, >, >=, !=]
 - [x] arrays
 - [x] for
-- [ ] while
+- [x] while
 - [x] fn
 - [ ] foreach
 - [ ] case
@@ -24,6 +24,7 @@ A lisp dialect that compiles to sqf.
 - [ ] waituntil
 - [ ] default
 - [x] function call syntax
+- [ ] comments
 
 ## Example
 

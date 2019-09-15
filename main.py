@@ -56,8 +56,12 @@ text = """
     (hint i)
     (hint "Hello For Loop!"))
 
-(for [i 0 10 2]
+;; this is a comment
+(for [i 0 10 2] ; some inline comment
     (hint i))
+
+(while (< x 10)
+    (hint x))
 """
 
 tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
@@ -260,6 +264,19 @@ class SQFASTCompiler(object):
         buffer += ["{", body, "}"]
 
         return ' '.join(buffer)
+
+    @special("while", [FORM, many(FORM)])
+    def compile_while_expression(self, expr, root, cond, body):
+        if not isinstance(cond, SQFExpression):
+            raise SyntaxError('while condition must be an expression')
+
+        cond = self.compile_if_not_str(cond)
+        body = self._compile_implicit_do(body)
+
+        buffer = [f"while {cond}"]
+        buffer += ["{", body, "}"]
+
+        return " ".join(buffer)
 
     @builds_model(SQFString)
     def compile_string(self, string):
