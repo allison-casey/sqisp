@@ -1,10 +1,10 @@
 import copy
-import my_lang.types as types
+import arma_lisp.types as types
 
 from pprint import pprint
-from my_lang.lexer import lexer
-from my_lang.models import *
-from my_lang.parser import parser, ParserState
+from arma_lisp.lexer import lexer
+from arma_lisp.models import *
+from arma_lisp.parser import parser, ParserState
 from funcparserlib.parser import (
     some,
     skip,
@@ -47,12 +47,15 @@ text = """
 
 (def my_val ( my_func "hello" "world" 24.3 ))
 
-(fn [a b c] (hint (str [a b c])))
+(fn [a b c]
+    (hint (str [a b c]))
+    (hint "sub dog"))
 
 """
 
 tokens = parser.parse(lexer.lex(text), state=ParserState())
 ast = SQFExpression([SQFSymbol("do")] + tokens)
+
 
 FORM = some(lambda _: True)
 
