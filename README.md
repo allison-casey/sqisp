@@ -26,8 +26,8 @@ A lisp dialect that compiles to sqf.
 
 ## Example
 
+### Input Arma Lisp
 
-### Output SQF
 ```lisp
 (= "hello" (if true "hello" "world"))
 (def some_num (+ 2 -5 (/ 2.4 30 3.3) (- 20 33)))
@@ -49,6 +49,7 @@ A lisp dialect that compiles to sqf.
     (hint "sub dog"))
 ```
 
+### Output SQF
 
 ```sqf
 ("hello" == if (true) then {
