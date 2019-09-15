@@ -52,6 +52,9 @@ text = """
     (hint (str [a b c]))
     (hint "sub dog"))
 
+(for [i 0 10]
+    (hint i)
+    (hint "Hello For Loop!"))
 """
 
 tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
@@ -195,31 +198,32 @@ class SQFASTCompiler(object):
 
         return f"{name} = {value}"
 
+    def _compile_implicit_do(self, body):
+        expr = SQFExpression([SQFSymbol("do")] + body)
+        root = SQFSymbol('do')
+        return self.compile_do_expression(expr, root, body, newline=False)
+
     @special("fn", [FORM, many(FORM)])
     def compile_fn_expression(self, expr, root, args, body):
         if not isinstance(args, SQFList):
             raise SyntaxError("args must be a list")
 
         sargs = map(self.compile_if_not_str, args)
-        sargs = " ".join(f'"{arg}"' for arg in args)
+        sargs = ", ".join(f'"{arg}"' for arg in args)
+
 
         buffer = []
         buffer += ["{"]
         buffer += [f"params [{sargs}];"]
-        buffer += [self.compile_if_not_str(expression) for expression in body]
+        buffer += [self._compile_implicit_do(body)]
         buffer += ["}"]
-
-        # buffer += [self.compile_if_not_str(body)]
 
         return " ".join(buffer)
 
     @special("do", [many(FORM)])
-    def compile_do_expression(self, expr, root, body):
-        return "\n".join(map(self.compile, body))
-
-    # @special("str", [FORM])
-    # def compile_str_expression(self, expr, root, args):
-    #     return f"{root} {self.compile(args)}"
+    def compile_do_expression(self, expr, root, body, newline=True):
+        nl = "\n"
+        return f";{nl * newline}".join(map(self.compile, body))
 
     @special("if", [FORM, FORM, maybe(FORM)])
     def compile_if(self, expr, root, cond, body, else_expr):
@@ -231,6 +235,23 @@ class SQFASTCompiler(object):
         if else_expr:
             buff += ["else {", f"\t{else_expr}", "}"]
         return " ".join(buff)
+
+    @special("for", [FORM, many(FORM)])
+    def compile_for_expression(self, expr, root, cond, body):
+        if not isinstance(cond, SQFList):
+            raise SyntaxError("condition must be a list")
+
+        if len(cond) not in range(3, 4 + 1):
+            raise SyntaxError(f"for takes 3 to 4 arguments. {len(cond)} given")
+
+        iterator = cond[0]
+        start = cond[1]
+        end = cond[2]
+        step = cond[3] if len(cond) == 4 else None
+
+        print(iterator, start, end, step)
+
+        return ""
 
     @builds_model(SQFString)
     def compile_string(self, string):
@@ -285,8 +306,8 @@ class SQFASTCompiler(object):
 compiler = SQFASTCompiler()
 compiled_sqf = compiler.compile(ast)
 
-print("Input LispSQF:", '"""', text.strip(), '"""', sep="\n")
-print()
+# print("Input LispSQF:", '"""', text.strip(), '"""', sep="\n")
+# print()
 print("Compiled SQF:", '"""', compiled_sqf, '"""', sep="\n")
 
 
