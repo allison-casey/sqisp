@@ -212,11 +212,12 @@ class SQFASTCompiler(object):
         return " && ".join(buff)
 
     @special("def", [FORM, FORM])
-    def compile_def_expression(self, expr, root, name, value):
+    def compile_def_expression(self, expr, root, name: str, value):
         name = self.compile_if_not_str(name)
+        name = name if name.startswith('_') else '_' + name
         value = self.compile_if_not_str(value)
 
-        return f"{name} = {value}"
+        return f"private {name} = {value}"
 
     def _compile_implicit_do(self, body):
         expr = SQFExpression([SQFSymbol("do")] + body)
