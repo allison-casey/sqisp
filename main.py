@@ -33,35 +33,48 @@ def pairwise(iterable):
 types.load_types("types")
 
 text = """
+;; Equality operators
 (= "hello" (if true "hello" "world"))
+
+;; Math Operators
 (def some_num (+ 2 -5 (/ 2.4 30 3.3) (- 20 33)))
 
+;; Unified function call syntax
 (select (count (allUnits)) 2)
 
+;; Variable definition
 (def some_arr [1 2 3 4 5 6])
+
+;; If Expression
 (if (or (>= some_num 223) (= (% some_num 2) 0))
     (str some_num)
     (if true "Hello" "World"))
 
-
 (def my_val ( my_func "hello" "world" 24.3 ))
 
+;; Define Lambda Expression
 (def even? (fn [val] (= (% val 2) 0)))
 
+;; Commas are whitespace
 (fn [a, b,,, c]
     (hint (str [a b c]))
     (hint "sub dog"))
 
+;; For loop with optional step
 (for [i 0 10]
     (hint i)
     (hint "Hello For Loop!"))
 
-;; this is a comment
 (for [i 0 10 2] ; some inline comment
     (hint i))
 
+;; While Loop
 (while (< x 10)
     (hint x))
+
+;; Doseq (forEach) loop
+(doseq [x [1, 2, 3, 4]]
+  (hint x))
 """
 
 tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
@@ -260,23 +273,46 @@ class SQFASTCompiler(object):
         body = self._compile_implicit_do(body)
 
         buffer = []
-        buffer += [f"for \"{iterator}\" from {start} to {end} {f'step {step} ' if step else ''}do"]
+        buffer += [
+            f"for \"{iterator}\" from {start} to {end} {f'step {step} ' if step else ''}do"
+        ]
         buffer += ["{", body, "}"]
 
-        return ' '.join(buffer)
+        return " ".join(buffer)
 
     @special("while", [FORM, many(FORM)])
     def compile_while_expression(self, expr, root, cond, body):
         if not isinstance(cond, SQFExpression):
-            raise SyntaxError('while condition must be an expression')
+            raise SyntaxError("while condition must be an expression")
 
         cond = self.compile_if_not_str(cond)
         body = self._compile_implicit_do(body)
 
-        buffer = [f"while {cond}"]
+        buffer = [f"while {{{cond}}} do"]
         buffer += ["{", body, "}"]
 
         return " ".join(buffer)
+
+    @special("doseq", [FORM, many(FORM)])
+    def compile_doseq_expression(self, expr, root, initializer, body):
+
+        if not isinstance(initializer, SQFList):
+            raise SyntaxError("initializer must be a list")
+
+        if len(initializer) != 2:
+            raise SyntaxError(
+                "initializer must contain only the binding name and the sequence"
+            )
+
+        binding, seq = initializer
+        binding = self.compile_if_not_str(binding)
+        seq = self.compile_if_not_str(seq)
+        body = self._compile_implicit_do(body)
+
+        buffer = ["{", body, "}"]
+        buffer += [f"forEach {seq}"]
+
+        return ' '.join(buffer)
 
     @builds_model(SQFString)
     def compile_string(self, string):
