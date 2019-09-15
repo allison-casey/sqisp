@@ -74,7 +74,7 @@ text = """
 
 ;; Doseq (forEach) loop
 (doseq [x [1, 2, 3, 4]]
-  (hint x))
+    (hint x))
 """
 
 tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
@@ -312,7 +312,7 @@ class SQFASTCompiler(object):
         buffer = ["{", body, "}"]
         buffer += [f"forEach {seq}"]
 
-        return ' '.join(buffer)
+        return " ".join(buffer)
 
     @builds_model(SQFString)
     def compile_string(self, string):
@@ -369,8 +369,18 @@ compiled_sqf = compiler.compile(ast)
 
 # print("Input LispSQF:", '"""', text.strip(), '"""', sep="\n")
 # print()
-print("Compiled SQF:", '"""', compiled_sqf, '"""', sep="\n")
+# print("Compiled SQF:", '"""', compiled_sqf, '"""', sep="\n")
 
+import subprocess
 
-with open("test.sqf", "w") as f:
+file_name = "test.sqf"
+
+with open(file_name, "w") as f:
     f.write(compiled_sqf)
+
+result = subprocess.run(
+    ["sqfvm", "--pretty-print", file_name, "-a", "-n", "-N"], capture_output=True
+)
+
+with open(file_name, "w") as f:
+    f.write(result.stdout.decode('utf-8'))
