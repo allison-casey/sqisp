@@ -19,12 +19,12 @@ A lisp dialect that compiles to sqf.
 - [x] while
 - [x] fn
 - [x] foreach
-- [ ] case
-- [ ] exitwith
-- [ ] waituntil
-- [ ] default
+- [ ] case      [NOTE]: May be unnecessary
+- [ ] exitwith  [NOTE]: May be unnecessary
+- [ ] waituntil [NOTE]: May be unnecessary
+- [ ] default   [NOTE]: May be unnecessary
 - [x] function call syntax
-- [ ] comments
+- [x] comments
 
 ## Example
 
