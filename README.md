@@ -25,6 +25,7 @@ A lisp dialect that compiles to sqf.
 - [ ] default   [NOTE]: May be unnecessary
 - [x] function call syntax
 - [x] comments
+- [ ] setv
 
 ## Example
 
