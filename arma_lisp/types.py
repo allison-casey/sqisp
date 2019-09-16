@@ -42,5 +42,3 @@ def parse_binary(line: str):
         fn_name,
         dict(type="binary", left_arg_type=left_arg_type, right_arg_type=right_arg_type),
     )
-
-
