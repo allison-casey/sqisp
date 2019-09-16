@@ -25,6 +25,26 @@ def main_empty(state, p):
     return []
 
 
+@pg.production("term : QUOTE term")
+def term_quote(state, p):
+    return SQFExpression([SQFSymbol("quote"), p[1]])
+
+
+@pg.production("term : QUASIQUOTE term")
+def term_quasiquote(state, p):
+    return SQFExpression([SQFSymbol("quasiquote"), p[1]])
+
+
+@pg.production("term : UNQUOTE term")
+def term_unquote(state, p):
+    return SQFExpression([SQFSymbol("unquote"), p[1]])
+
+
+@pg.production("term : UNQUOTESPLICE term")
+def term_unquotesplice(state, p):
+    return SQFExpression([SQFSymbol("unquote-splice"), p[1]])
+
+
 @pg.production("paren : LPAREN list_contents RPAREN")
 def paren(state, p):
     return SQFExpression(p[1])
