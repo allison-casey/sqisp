@@ -2,12 +2,17 @@ from rply import LexerGenerator
 
 lg = LexerGenerator()
 
+end_quote = r'(?![\s\)\]\}])'
 identifier = r'[^()\[\]{}\'"\s;]+'
 
 lg.add("LPAREN", r"\(")
 lg.add("RPAREN", r"\)")
 lg.add("LBRACKET", r"\[")
 lg.add("RBRACKET", r"\]")
+lg.add('QUOTE', r'\'%s' % end_quote)
+lg.add('QUASIQUOTE', r'`%s' % end_quote)
+lg.add('UNQUOTESPLICE', r'~@%s' % end_quote)
+lg.add('UNQUOTE', r'~%s' % end_quote)
 # lg.add("LCURLY", r"\{")
 # lg.add("RCURLY", r"\}")
 partial_string = r"""(?x)
