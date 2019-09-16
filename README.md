@@ -87,9 +87,9 @@ A lisp dialect that compiles to sqf.
 } else {
     "world";
 });
-private_some_num = (2 + - 5 + (2.4 / 30 / 3.3) + (20 - 33));
+private _some_num = (2 + - 5 + (2.4 / 30 / 3.3) + (20 - 33));
 ((count allUnits) select 2);
-private_some_arr = [1, 2, 3, 4, 5, 6];
+private _some_arr = [1, 2, 3, 4, 5, 6];
 some_global = "hello global";
 anoher_global = "I can even have leading underscores!";
 if ((some_num >= 223) || ((some_num % 2) == 0)) then {
@@ -101,8 +101,8 @@ if ((some_num >= 223) || ((some_num % 2) == 0)) then {
         "World";
     };
 };
-private_my_val = ["hello", "world", 24.3] call my_func;
-private_is_even = {
+private _my_val = ["hello", "world", 24.3] call my_func;
+private _is_even = {
     params ["val"];
     ((val % 2) == 0);
 };
@@ -124,7 +124,7 @@ while {
     (hint x);
 };
 {
-    private_x = _x;
+    private _x = _x;
     (hint x);
 } forEach [1, 2, 3, 4];
 ```
