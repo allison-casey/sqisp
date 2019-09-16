@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
+
+"""Top-level package for Arma Lisp."""
+
+__author__ = """Steve Casey"""
+__email__ = 'stevecasey21@gmail.com'
+__version__ = '0.1.0'
+
 from .types import load_types
 from .lexer import lexer
 from .models import SQFExpression, SQFSymbol
 from .parser import parser, ParserState
 from .compiler import SQFASTCompiler
-from .cmdline import sqisp_main
 
 
 def compile(text):
@@ -14,6 +21,3 @@ def compile(text):
     compiler = SQFASTCompiler()
     compiled_sqf = compiler.compile(ast)
     return compiled_sqf
-
-if __name__ == '__main__':
-    sqisp_main()
