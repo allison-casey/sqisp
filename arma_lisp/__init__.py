@@ -4,7 +4,7 @@
 
 __author__ = """Steve Casey"""
 __email__ = 'stevecasey21@gmail.com'
-__version__ = '0.1.0'
+__version__ = '0.3.0'
 
 from .types import load_types
 from .lexer import lexer
@@ -13,11 +13,11 @@ from .parser import parser, ParserState
 from .compiler import SQFASTCompiler
 
 
-def compile(text):
+def compile(text, pretty=False):
     load_types("types")
     tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
     ast = SQFExpression([SQFSymbol("do")] + tokens)
 
-    compiler = SQFASTCompiler()
+    compiler = SQFASTCompiler(pretty=pretty)
     compiled_sqf = compiler.compile(ast)
     return compiled_sqf
