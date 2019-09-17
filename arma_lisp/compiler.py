@@ -5,6 +5,7 @@ from .model_patterns import FORM, whole, times
 from .utils import mangle, pairwise
 from .models import *
 from funcparserlib.parser import many, oneplus, maybe, NoParseError
+from collections import defaultdict
 
 NEWLINE = "\n"
 INDENT = "\t"
@@ -45,6 +46,17 @@ def builds_model(*model_types):
     return _dec
 
 
+# class SymbolTable(object):
+#     def __init__(self):
+#         self._global_symbol_table = defaultdict(dict)
+
+#     def insert(self, scope: int, symbol, **kwargs):
+#         self._global_symbol_table[scope][symbol] = dict(name=symbol, **kwargs)
+
+#     def lookup(self, symbol, scope=None):
+#         pass
+
+
 class SQFASTCompiler(object):
     def __init__(self, pretty=False):
         self.pretty = pretty
@@ -69,6 +81,11 @@ class SQFASTCompiler(object):
         expr = SQFExpression([SQFSymbol("do")] + body)
         root = SQFSymbol("do")
         return self.compile_do_expression(level, expr, root, body)
+
+    def _mangle_private(self, level, name):
+        pname = self.compile_if_not_str(level, name)
+        pname = pname if pname.startswith("_") else "_" + pname
+        return pname
 
     def compile_function_call(self, level, root, args):
         sroot = self.compile_if_not_str(level, root)
@@ -126,21 +143,33 @@ class SQFASTCompiler(object):
 
     @special("def", [FORM, FORM])
     def compile_def_expression(self, level, expr, root, name: str, value):
-        mangled_name = self.compile_if_not_str(level, name)
-        mangled_name = (
-            mangled_name if mangled_name.startswith("_") else "_" + mangled_name
-        )
+        if name in self.global_symbols:
+            raise SyntaxError("Attempting to shadow global name with private name.")
+
+        pname = self.compile_if_not_str(level, name)
+        pname = pname if pname.startswith("_") else "_" + pname
         value = self.compile_if_not_str(level, value)
 
-        return f"private {mangled_name} = {value}"
+        return f"private {pname} = {value}"
 
     @special("defglobal", [FORM, FORM])
     def compile_defglobal_expression(self, level, expr, root, name, value):
-        name = self.compile_if_not_str(level, name)
-        name = name.lstrip("_")
+        gname = self.compile_if_not_str(level, name)
+        gname = name.lstrip("_")
         value = self.compile_if_not_str(level, value)
 
-        return f"{name} = {value}"
+        self.global_symbols[name] = gname
+
+        return f"{gname} = {value}"
+
+    @special("setv", [FORM, FORM])
+    def compile_setv_expression(self, level, expr, root, name, value):
+        if name in self.global_symbols:
+            mangled_name = self.global_symbols[name]
+        else:
+            mangled_name = self._mangle_private(level, name)
+
+        return f"{mangled_name} = {value}"
 
     @special("fn", [FORM, many(FORM)])
     def compile_fn_expression(self, level, expr, root, args, body):
@@ -152,28 +181,28 @@ class SQFASTCompiler(object):
 
         buffer = []
         buffer += ["{"]
-        buffer += [f"params [{sargs}];"]
-        buffer += [self._compile_implicit_do(level, body)]
+        # buffer += [f"params [{sargs}];"]
+        buffer += [self._compile_implicit_do(level, [f"params [{sargs}]"] + body)]
         buffer += ["}"]
 
         return self._seperator.join(buffer)
 
     @special("do", [many(FORM)])
     def compile_do_expression(self, level, expr, root, body):
+
         return f"; {self._seperator}".join(
-           self.compile_if_not_str(level, expression) for expression in body
+            self.compile_if_not_str(level, expression) for expression in body
         )
 
     @special("if", [FORM, FORM, maybe(FORM)])
     def compile_if_expression(self, level, expr, root, cond, body, else_expr):
-        print(level, body)
         cond = self.compile_if_not_str(level, cond)
-        body =self.compile_if_not_str(level, body)
-        else_expr =self.compile_if_not_str(level, else_expr) if else_expr else None
+        body = self.compile_if_not_str(level, body)
+        else_expr = self.compile_if_not_str(level, else_expr) if else_expr else None
 
         buff = [f"if ({cond}) then", "{", f"{body}", f"}}{'' if else_expr else ';'}"]
         if else_expr:
-            buff += ["else {", f"{else_expr}", "}"]
+            buff += ["else", "{", f"{else_expr}", "}"]
         return self._seperator.join(buff)
 
     @special("for", [FORM, many(FORM)])

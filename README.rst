@@ -50,7 +50,7 @@ Expressions
 - [ ] default   [NOTE]: May be unnecessary
 - [x] function call syntax
 - [x] comments
-- [ ] setv
+- [x] setv
 
 Example
 -------

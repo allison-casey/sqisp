@@ -30,10 +30,7 @@ def main(input, output, pretty):
     with open(path, "r") as f:
         sqisp_text = f.read()
 
-    try:
-        compiled_sqf = compile(sqisp_text, pretty=pretty)
-    except Exception as e:
-        click.echo(e.message, err=True)
+    compiled_sqf = compile(sqisp_text, pretty=pretty)
 
     if output:
         with open(output, "w") as f:
