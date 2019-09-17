@@ -87,10 +87,21 @@ class SQFASTCompiler(object):
         pname = pname if pname.startswith("_") else "_" + pname
         return pname
 
+    def _mangle_global(self, level, name):
+        gname = self.compile_if_not_str(level, name)
+        gname = gname.lstrip("_")
+        return gname
+
+    def _mangle_binding(self, level, name):
+        if name in self.global_symbols:
+            return self._mangle_global(level, name)
+        else:
+            return self._mangle_private(level, name)
+
     def compile_function_call(self, level, root, args):
         sroot = self.compile_if_not_str(level, root)
         sargs = [
-            self._mangle_private(level, arg) if isinstance(arg, SQFSymbol) else arg
+            self._mangle_binding(level, arg) if isinstance(arg, SQFSymbol) else arg
             for arg in args
         ]
         sargs = [self.compile_if_not_str(level, arg) for arg in sargs]
@@ -150,8 +161,9 @@ class SQFASTCompiler(object):
         if name in self.global_symbols:
             raise SyntaxError("Attempting to shadow global name with private name.")
 
-        pname = self.compile_if_not_str(level, name)
-        pname = pname if pname.startswith("_") else "_" + pname
+        # pname = self.compile_if_not_str(level, name)
+        # pname = pname if pname.startswith("_") else "_" + pname
+        pname = self._mangle_private(level, name)
         value = self.compile_if_not_str(level, value)
 
         return f"private {pname} = {value}"
@@ -159,8 +171,8 @@ class SQFASTCompiler(object):
     @special("defglobal", [FORM, FORM])
     def compile_defglobal_expression(self, level, expr, root, name, value):
         value = self.compile_if_not_str(level, value)
-        gname = self.compile_if_not_str(level, name)
-        gname = gname.lstrip("_")
+        gname = self._mangle_global(level, name)
+        # gname = self.compile_if_not_str(level, name)
 
         self.global_symbols[name] = gname
 
