@@ -10,26 +10,33 @@ from arma_lisp import compile
 
 
 @click.command()
-@click.argument('input', type=click.Path(exists=True))
-def main(input, args=None):
+@click.argument("input", type=click.Path(exists=True))
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(),
+    help="Path to output file. Prints to std out otherwise.",
+)
+@click.option(
+    "-p", "--pretty", is_flag=True, help="Pretty prints the the compiled sqf."
+)
+def main(input, output, pretty):
     """Console script for arma_lisp."""
 
     path = pathlib.PurePath(input)
-    parent = path.parent
-    name = path.stem
+    # parent = path.parent
+    # name = path.stem
 
-    out_path = pathlib.PurePath(parent, name + '.sqf')
-
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         sqisp_text = f.read()
 
-    try:
-        compiled_sqf = compile(sqisp_text)
-    except Exception as e:
-        click.echo(e.message, err=True)
+    compiled_sqf = compile(sqisp_text, pretty=pretty)
 
-    with open(out_path, 'w') as f:
-        f.write(compiled_sqf)
+    if output:
+        with open(output, "w") as f:
+            f.write(compiled_sqf)
+    else:
+        click.echo(compiled_sqf)
     return 0
 
 

@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=7.0', ]
+requirements = ['Click>=7.0', 'rply', 'funcparserlib' ]
 
 setup_requirements = ['pytest-runner', ]
 
@@ -20,17 +20,12 @@ test_requirements = ['pytest>=3', ]
 setup(
     author="Steve Casey",
     author_email='stevecasey21@gmail.com',
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
+    python_requires='>=3.7',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
     description="A lisp dialect that compiles to sqf.",
@@ -50,6 +45,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/sjcasey21/arma_lisp',
-    version='0.1.0',
+    version='0.3.0',
     zip_safe=False,
 )
