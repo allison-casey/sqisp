@@ -6,8 +6,8 @@ from .utils import mangle, pairwise
 from .models import *
 from funcparserlib.parser import many, oneplus, maybe, NoParseError
 
-NEWLINE = '\n'
-INDENT = '\t'
+NEWLINE = "\n"
+INDENT = "\t"
 
 _model_compilers = {}
 _special_form_compilers = {}
@@ -48,37 +48,56 @@ def builds_model(*model_types):
 class SQFASTCompiler(object):
     def __init__(self, pretty=False):
         self.pretty = pretty
-        self._seperator = NEWLINE if pretty else ' '
+        self._seperator = NEWLINE if pretty else " "
+        self.global_symbols = dict()
 
-    def compile_if_not_str(self, value):
+    def compile_if_not_str(self, level, value):
         # return value if isinstance(value, str) else self.compile(value)
-        return value if type(value) is str else self.compile(value)
+        return value if type(value) is str else self.compile(value, level + 1)
 
-    def compile_atom(self, atom):
+    def compile_atom(self, atom, level):
         atom = copy.copy(atom)
-        return _model_compilers[type(atom)](self, atom)
+        return _model_compilers[type(atom)](self, level, atom)
 
-    def compile(self, tree):
+    def compile(self, tree, level=0):
         if tree is None:
             return None
+        output = self.compile_atom(tree, level)
+        return output
 
-        return self.compile_atom(tree)
+    def _compile_implicit_do(self, level, body):
+        expr = SQFExpression([SQFSymbol("do")] + body)
+        root = SQFSymbol("do")
+        return self.compile_do_expression(level, expr, root, body)
+
+    def compile_function_call(self, level, root, args):
+        sroot = self.compile_if_not_str(level, root)
+        sargs = [self.compile_if_not_str(level, arg) for arg in args]
+        if is_builtin(sroot):
+            if len(args) == 0:
+                return sroot
+            elif len(args) == 1:
+                return f"( {sroot} {sargs[0]} )"
+            elif len(args) == 2:
+                return f"( {sargs[0]} {sroot} {sargs[1]} )"
+        else:
+            return f"[{', '.join(sargs)}] call {sroot}"
 
     @special("+", [many(FORM)])
     @special("/", [many(FORM)])
     @special("*", [many(FORM)])
     @special("-", [many(FORM)])
-    def compile_math_expression(self, expr, root, args):
+    def compile_math_expression(self, level, expr, root, args):
         sroot = str(root)
-        sargs = [self.compile_if_not_str(arg) for arg in args]
+        sargs = [self.compile_if_not_str(level, arg) for arg in args]
         buff = f" {sroot} ".join(sargs)
         return f"({buff})"
 
     @special(["and", "or"], [many(FORM)])
-    def compile_and_or_expression(self, expr, root, args):
-        sroot = self.compile_if_not_str(root)
+    def compile_and_or_expression(self, level, expr, root, args):
+        sroot = self.compile_if_not_str(level, root)
         sroot = _operator_lookup[sroot]
-        args = [self.compile_if_not_str(arg) for arg in args]
+        args = [self.compile_if_not_str(level, arg) for arg in args]
 
         if len(args) == 0:
             return "true"
@@ -90,44 +109,41 @@ class SQFASTCompiler(object):
     @special(["=", "<", "<=", ">", ">="], [oneplus(FORM)])
     @special("!=", [times(2, float("inf"), FORM)])
     @special("%", [times(2, 2, FORM)])
-    def compile_math_expression(self, expr, root, args):
-        sroot = self.compile_if_not_str(root)
+    def compile_math_expression(self, level, expr, root, args):
+        sroot = self.compile_if_not_str(level, root)
         sroot = _operator_lookup[sroot]
-        sargs = [self.compile_if_not_str(arg) for arg in args]
+        sargs = [self.compile_if_not_str(level, arg) for arg in args]
 
         if len(sargs) == 1:
             return "true"
 
         buff = []
         for left, right in pairwise(sargs):
-            left = self.compile_if_not_str(left)
-            right = self.compile_if_not_str(right)
+            left = self.compile_if_not_str(level, left)
+            right = self.compile_if_not_str(level, right)
             buff += [f"({left} {sroot} {right})"]
         return " && ".join(buff)
 
     @special("def", [FORM, FORM])
-    def compile_def_expression(self, expr, root, name: str, value):
-        name = self.compile_if_not_str(name)
-        name = name if name.startswith("_") else "_" + name
-        value = self.compile_if_not_str(value)
+    def compile_def_expression(self, level, expr, root, name: str, value):
+        mangled_name = self.compile_if_not_str(level, name)
+        mangled_name = (
+            mangled_name if mangled_name.startswith("_") else "_" + mangled_name
+        )
+        value = self.compile_if_not_str(level, value)
 
-        return f"private {name} = {value}"
+        return f"private {mangled_name} = {value}"
 
     @special("defglobal", [FORM, FORM])
-    def compile_defglobal_expression(self, expr, root, name, value):
-        name = self.compile_if_not_str(name)
+    def compile_defglobal_expression(self, level, expr, root, name, value):
+        name = self.compile_if_not_str(level, name)
         name = name.lstrip("_")
-        value = self.compile_if_not_str(value)
+        value = self.compile_if_not_str(level, value)
 
         return f"{name} = {value}"
 
-    def _compile_implicit_do(self, body,):
-        expr = SQFExpression([SQFSymbol("do")] + body)
-        root = SQFSymbol("do")
-        return self.compile_do_expression(expr, root, body,)
-
     @special("fn", [FORM, many(FORM)])
-    def compile_fn_expression(self, expr, root, args, body):
+    def compile_fn_expression(self, level, expr, root, args, body):
         if not isinstance(args, SQFList):
             raise SyntaxError("args must be a list")
 
@@ -137,20 +153,23 @@ class SQFASTCompiler(object):
         buffer = []
         buffer += ["{"]
         buffer += [f"params [{sargs}];"]
-        buffer += [self._compile_implicit_do(body)]
+        buffer += [self._compile_implicit_do(level, body)]
         buffer += ["}"]
 
         return self._seperator.join(buffer)
 
     @special("do", [many(FORM)])
-    def compile_do_expression(self, expr, root, body,):
-        return f"; {self._seperator}".join(self.compile(expression) for expression in body)
+    def compile_do_expression(self, level, expr, root, body):
+        return f"; {self._seperator}".join(
+           self.compile_if_not_str(level, expression) for expression in body
+        )
 
     @special("if", [FORM, FORM, maybe(FORM)])
-    def compile_if(self, expr, root, cond, body, else_expr):
-        cond = self.compile(cond)
-        body = self.compile(body)
-        else_expr = self.compile(else_expr) if else_expr else None
+    def compile_if_expression(self, level, expr, root, cond, body, else_expr):
+        print(level, body)
+        cond = self.compile_if_not_str(level, cond)
+        body =self.compile_if_not_str(level, body)
+        else_expr =self.compile_if_not_str(level, else_expr) if else_expr else None
 
         buff = [f"if ({cond}) then", "{", f"{body}", f"}}{'' if else_expr else ';'}"]
         if else_expr:
@@ -158,21 +177,21 @@ class SQFASTCompiler(object):
         return self._seperator.join(buff)
 
     @special("for", [FORM, many(FORM)])
-    def compile_for_expression(self, expr, root, cond, body):
+    def compile_for_expression(self, level, expr, root, cond, body):
         if not isinstance(cond, SQFList):
             raise SyntaxError("condition must be a list")
 
         if len(cond) not in range(3, 4 + 1):
             raise SyntaxError(f"for takes 3 to 4 arguments. {len(cond)} given")
 
-        cond = [self.compile_if_not_str(val) for val in cond]
+        cond = [self.compile_if_not_str(level, val) for val in cond]
 
         iterator = mangle(cond[0])
         start = cond[1]
         end = cond[2]
         step = cond[3] if len(cond) == 4 else None
 
-        body = self._compile_implicit_do(body)
+        body = self._compile_implicit_do(level, body)
 
         buffer = []
         buffer += [
@@ -184,12 +203,12 @@ class SQFASTCompiler(object):
         return self._seperator.join(buffer)
 
     @special("while", [FORM, many(FORM)])
-    def compile_while_expression(self, expr, root, cond, body):
+    def compile_while_expression(self, level, expr, root, cond, body):
         if not isinstance(cond, SQFExpression):
             raise SyntaxError("while condition must be an expression")
 
-        cond = self.compile_if_not_str(cond)
-        body = self._compile_implicit_do(body)
+        cond = self.compile_if_not_str(level, cond)
+        body = self._compile_implicit_do(level, body)
 
         buffer = [f"while {{{cond}}} do"]
         buffer += ["{", body, "}"]
@@ -197,7 +216,7 @@ class SQFASTCompiler(object):
         return self._seperator.join(buffer)
 
     @special("doseq", [FORM, many(FORM)])
-    def compile_doseq_expression(self, expr, root, initializer, body):
+    def compile_doseq_expression(self, level, expr, root, initializer, body):
 
         if not isinstance(initializer, SQFList):
             raise SyntaxError("initializer must be a list")
@@ -208,12 +227,12 @@ class SQFASTCompiler(object):
             )
 
         binding, seq = initializer
-        binding = self.compile_if_not_str(binding)
+        binding = self.compile_if_not_str(level, binding)
         binding_expr = SQFExpression(
             [SQFSymbol("def"), SQFSymbol(binding), SQFSymbol("_x")]
         )
-        seq = self.compile_if_not_str(seq)
-        body = self._compile_implicit_do([binding_expr] + body)
+        seq = self.compile_if_not_str(level, seq)
+        body = self._compile_implicit_do(level, [binding_expr] + body)
 
         buffer = ["{", body, "}"]
         buffer += [f"forEach {seq}"]
@@ -221,37 +240,24 @@ class SQFASTCompiler(object):
         return self._seperator.join(buffer)
 
     @builds_model(SQFString)
-    def compile_string(self, string):
+    def compile_string(self, level, string):
         return f'"{string}"'
 
     @builds_model(SQFSymbol)
-    def compile_symbol(self, symbol):
+    def compile_symbol(self, level, symbol):
         return mangle(symbol)
 
     @builds_model(SQFList)
-    def compile_list(self, lst):
+    def compile_list(self, level, lst):
         return f"[{', '.join(map(self.compile, lst))}]"
 
     @builds_model(SQFInteger)
     @builds_model(SQFFloat)
-    def compile_integer(self, integer):
+    def compile_integer(self, level, integer):
         return str(integer)
 
-    def compile_function_call(self, root, args):
-        sroot = self.compile_if_not_str(root)
-        sargs = [self.compile_if_not_str(arg) for arg in args]
-        if is_builtin(sroot):
-            if len(args) == 0:
-                return sroot
-            elif len(args) == 1:
-                return f"( {sroot} {sargs[0]} )"
-            elif len(args) == 2:
-                return f"( {sargs[0]} {sroot} {sargs[1]} )"
-        else:
-            return f"[{', '.join(sargs)}] call {sroot}"
-
     @builds_model(SQFExpression)
-    def compile_expression(self, expr):
+    def compile_expression(self, level, expr):
         if not expr:
             raise SyntaxError("empty expression")
 
@@ -265,6 +271,6 @@ class SQFASTCompiler(object):
                     parse_tree = pattern.parse(args)
                 except NoParseError as e:
                     raise SyntaxError("Parse error for form")
-                return build_method(self, expr, sroot, *parse_tree)
+                return build_method(self, level, expr, sroot, *parse_tree)
             else:
-                return self.compile_function_call(sroot, args)
+                return self.compile_function_call(level, sroot, args)
