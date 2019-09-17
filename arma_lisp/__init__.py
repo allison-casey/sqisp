@@ -13,11 +13,11 @@ from .parser import parser, ParserState
 from .compiler import SQFASTCompiler
 
 
-def compile(text):
+def compile(text, pretty=False):
     load_types("types")
     tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
     ast = SQFExpression([SQFSymbol("do")] + tokens)
 
-    compiler = SQFASTCompiler()
+    compiler = SQFASTCompiler(pretty=pretty)
     compiled_sqf = compiler.compile(ast)
     return compiled_sqf

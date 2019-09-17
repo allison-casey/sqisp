@@ -6,6 +6,9 @@ from .utils import mangle, pairwise
 from .models import *
 from funcparserlib.parser import many, oneplus, maybe, NoParseError
 
+NEWLINE = '\n'
+INDENT = '\t'
+
 _model_compilers = {}
 _special_form_compilers = {}
 _operator_lookup = {
@@ -43,8 +46,9 @@ def builds_model(*model_types):
 
 
 class SQFASTCompiler(object):
-    def __init__(self,):
-        self.buffer = ""
+    def __init__(self, pretty=False):
+        self.pretty = pretty
+        self._seperator = NEWLINE if pretty else ' '
 
     def compile_if_not_str(self, value):
         # return value if isinstance(value, str) else self.compile(value)
@@ -117,10 +121,10 @@ class SQFASTCompiler(object):
 
         return f"{name} = {value}"
 
-    def _compile_implicit_do(self, body):
+    def _compile_implicit_do(self, body,):
         expr = SQFExpression([SQFSymbol("do")] + body)
         root = SQFSymbol("do")
-        return self.compile_do_expression(expr, root, body, newline=False)
+        return self.compile_do_expression(expr, root, body,)
 
     @special("fn", [FORM, many(FORM)])
     def compile_fn_expression(self, expr, root, args, body):
@@ -136,12 +140,11 @@ class SQFASTCompiler(object):
         buffer += [self._compile_implicit_do(body)]
         buffer += ["}"]
 
-        return " ".join(buffer)
+        return self._seperator.join(buffer)
 
     @special("do", [many(FORM)])
-    def compile_do_expression(self, expr, root, body, newline=True):
-        nl = "\n"
-        return f"; {nl * newline}".join(map(self.compile, body))
+    def compile_do_expression(self, expr, root, body,):
+        return f"; {self._seperator}".join(self.compile(expression) for expression in body)
 
     @special("if", [FORM, FORM, maybe(FORM)])
     def compile_if(self, expr, root, cond, body, else_expr):
@@ -149,10 +152,10 @@ class SQFASTCompiler(object):
         body = self.compile(body)
         else_expr = self.compile(else_expr) if else_expr else None
 
-        buff = [f"if ({cond}) then", "{", f"\t{body}", f"}}{'' if else_expr else ';'}"]
+        buff = [f"if ({cond}) then", "{", f"{body}", f"}}{'' if else_expr else ';'}"]
         if else_expr:
-            buff += ["else {", f"\t{else_expr}", "}"]
-        return " ".join(buff)
+            buff += ["else {", f"{else_expr}", "}"]
+        return self._seperator.join(buff)
 
     @special("for", [FORM, many(FORM)])
     def compile_for_expression(self, expr, root, cond, body):
@@ -175,9 +178,10 @@ class SQFASTCompiler(object):
         buffer += [
             f"for \"{iterator}\" from {start} to {end} {f'step {step} ' if step else ''}do"
         ]
+        buffer += []
         buffer += ["{", body, "}"]
 
-        return " ".join(buffer)
+        return self._seperator.join(buffer)
 
     @special("while", [FORM, many(FORM)])
     def compile_while_expression(self, expr, root, cond, body):
@@ -190,7 +194,7 @@ class SQFASTCompiler(object):
         buffer = [f"while {{{cond}}} do"]
         buffer += ["{", body, "}"]
 
-        return " ".join(buffer)
+        return self._seperator.join(buffer)
 
     @special("doseq", [FORM, many(FORM)])
     def compile_doseq_expression(self, expr, root, initializer, body):
@@ -214,7 +218,7 @@ class SQFASTCompiler(object):
         buffer = ["{", body, "}"]
         buffer += [f"forEach {seq}"]
 
-        return " ".join(buffer)
+        return self._seperator.join(buffer)
 
     @builds_model(SQFString)
     def compile_string(self, string):
