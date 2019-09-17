@@ -55,7 +55,11 @@ Expressions
 Example
 -------
 
+Input Arma Lisp
+---------
+
 .. code-block:: lisp
+
    ;; Equality operators
    (= "hello" (if true "hello" "world"))
 
@@ -103,7 +107,11 @@ Example
    (doseq [x [1, 2, 3, 4]]
        (hint x))
 
-.. code-block: sqf
+Output SQF
+---------
+
+.. code-block:: sqf
+
   ("hello" == if (true) then {
       "hello";
   } else {
@@ -149,13 +157,3 @@ Example
       private_x = _x;
       (hint x);
   } forEach [1, 2, 3, 4];
-
-
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
