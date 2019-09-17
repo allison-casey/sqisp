@@ -89,7 +89,11 @@ class SQFASTCompiler(object):
 
     def compile_function_call(self, level, root, args):
         sroot = self.compile_if_not_str(level, root)
-        sargs = [self.compile_if_not_str(level, arg) for arg in args]
+        sargs = [
+            self._mangle_private(level, arg) if isinstance(arg, SQFSymbol) else arg
+            for arg in args
+        ]
+        sargs = [self.compile_if_not_str(level, arg) for arg in sargs]
         if is_builtin(sroot):
             if len(args) == 0:
                 return sroot
@@ -154,9 +158,9 @@ class SQFASTCompiler(object):
 
     @special("defglobal", [FORM, FORM])
     def compile_defglobal_expression(self, level, expr, root, name, value):
-        gname = self.compile_if_not_str(level, name)
-        gname = name.lstrip("_")
         value = self.compile_if_not_str(level, value)
+        gname = self.compile_if_not_str(level, name)
+        gname = gname.lstrip("_")
 
         self.global_symbols[name] = gname
 
@@ -169,6 +173,8 @@ class SQFASTCompiler(object):
         else:
             mangled_name = self._mangle_private(level, name)
 
+        value = self.compile_if_not_str(level, value)
+
         return f"{mangled_name} = {value}"
 
     @special("fn", [FORM, many(FORM)])
@@ -178,18 +184,18 @@ class SQFASTCompiler(object):
 
         sargs = map(self.compile_if_not_str, args)
         sargs = ", ".join(f'"{arg}"' for arg in args)
+        params = [f"params [{sargs}]"] if args else []
 
         buffer = []
         buffer += ["{"]
         # buffer += [f"params [{sargs}];"]
-        buffer += [self._compile_implicit_do(level, [f"params [{sargs}]"] + body)]
+        buffer += [self._compile_implicit_do(level, params + body)]
         buffer += ["}"]
 
         return self._seperator.join(buffer)
 
     @special("do", [many(FORM)])
     def compile_do_expression(self, level, expr, root, body):
-
         return f"; {self._seperator}".join(
             self.compile_if_not_str(level, expression) for expression in body
         )
