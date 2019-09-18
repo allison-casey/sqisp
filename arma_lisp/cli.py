@@ -7,7 +7,7 @@ import os
 import pathlib
 
 from arma_lisp import compile
-
+from .formatter import format
 
 @click.command()
 @click.argument("input", type=click.Path(exists=True))
@@ -30,7 +30,10 @@ def main(input, output, pretty):
     with open(path, "r") as f:
         sqisp_text = f.read()
 
-    compiled_sqf = compile(sqisp_text, pretty=pretty)
+    compiled_sqf = compile(sqisp_text)
+
+    if pretty:
+        compiled_sqf = format(compiled_sqf)
 
     if output:
         with open(output, "w") as f:
