@@ -39,7 +39,7 @@ setup(
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='arma_lisp',
-    name='arma_lisp',
+    name='arma-lisp',
     packages=find_packages(include=['arma_lisp', 'arma_lisp.*']),
     setup_requires=setup_requirements,
     test_suite='tests',
