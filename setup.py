@@ -42,6 +42,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/sjcasey21/arma_lisp",
-    version="0.3.4",
+    version="version='0.3.5'",
     zip_safe=False,
 )
