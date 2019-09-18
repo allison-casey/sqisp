@@ -1,6 +1,6 @@
-=========
+===========
 Arma Lisp
-=========
+===========
 
 
 .. image:: https://img.shields.io/pypi/v/arma_lisp.svg
@@ -24,7 +24,7 @@ A lisp dialect that compiles to sqf.
 
 
 Features
---------
+----------
 
 - [ ] macros
 - [ ] keywords
@@ -32,11 +32,11 @@ Features
 - [x] private by default
 
 Expressions
--------
+-------------
 
 - [x] if
 - [x] def
-- [x] basic math expressions [+, -, *, /, %]
+- [x] basic math expressions [+, -, \*, /, %]
 - [x] do
 - [x] logical operators [and, or, =, <, <=, >, >=, !=]
 - [x] arrays
@@ -53,10 +53,10 @@ Expressions
 - [x] setv
 
 Example
--------
+-----------
 
 Input Arma Lisp
----------
+---------------
 
 .. code-block:: lisp
 
@@ -108,9 +108,9 @@ Input Arma Lisp
        (hint x))
 
 Output SQF
----------
+-----------
 
-.. code-block:: sqf
+.. code-block::
 
   ("hello" == if (true) then {
       "hello";
