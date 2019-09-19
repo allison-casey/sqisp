@@ -6,6 +6,7 @@ from .utils import mangle, pairwise
 from .models import *
 from funcparserlib.parser import many, oneplus, maybe, NoParseError
 from collections import defaultdict
+from anytree import Walker, Node, RenderTree, AsciiStyle
 
 NEWLINE = "\n"
 INDENT = "\t"
@@ -46,65 +47,94 @@ def builds_model(*model_types):
     return _dec
 
 
-# class SymbolTable(object):
-#     def __init__(self):
-#         self._global_symbol_table = defaultdict(dict)
+class SymbolTable(object):
+    def __init__(self):
+        self.global_scope = Node({})
+        self._walker = Walker()
 
-#     def insert(self, scope: int, symbol, **kwargs):
-#         self._global_symbol_table[scope][symbol] = dict(name=symbol, **kwargs)
+    def scope_from(self, scope):
+        child_scope = Node({}, parent=scope)
+        return child_scope
 
-#     def lookup(self, symbol, scope=None):
-#         pass
+    def lookup(self, scope, value):
+        while True:
+            if value in scope.name:
+                return scope.name[value]
+            if scope.parent:
+                scope = scope.parent
+            else:
+                return None
+
+    def insert(self, scope, key, value):
+        scope.name[key] = value
+
+
+# mysymboltable = SymbolTable()
+# myscope = mysymboltable.global_scope
+# print(myscope.parent)
+# childscope = mysymboltable.scope_from(myscope)
+# childscope.name['something'] = 'else'
+# print(mysymboltable.lookup(childscope, 'not in the scope'))
 
 
 class SQFASTCompiler(object):
     def __init__(self, pretty=False):
         self.pretty = pretty
         self._seperator = NEWLINE if pretty else " "
-        self.global_symbols = dict()
+        self.symbol_table = SymbolTable()
 
-    def compile_if_not_str(self, level, value):
+    def compile_if_not_str(self, scope, value):
         # return value if isinstance(value, str) else self.compile(value)
-        return value if type(value) is str else self.compile(value, level + 1)
+        return value if type(value) is str else self.compile(value, scope)
 
-    def compile_atom(self, atom, level):
+    def compile_atom(self, atom, scope):
         atom = copy.copy(atom)
-        return _model_compilers[type(atom)](self, level, atom)
+        return _model_compilers[type(atom)](self, scope, atom)
 
-    def compile(self, tree, level=0):
+    def compile_root(self, tree):
+        scope = self.symbol_table.global_scope
+        text = self.compile(tree, scope)
+
+        print(RenderTree(self.symbol_table.global_scope, style=AsciiStyle()))
+
+        return text
+
+    def compile(self, tree, scope):
         if tree is None:
             return None
-        output = self.compile_atom(tree, level)
+        output = self.compile_atom(tree, scope)
         return output
 
-    def _compile_implicit_do(self, level, body):
+    def _compile_implicit_do(self, scope, body):
         expr = SQFExpression([SQFSymbol("do")] + body)
         root = SQFSymbol("do")
-        return self.compile_do_expression(level, expr, root, body)
+        return self.compile_do_expression(scope, expr, root, body)
 
-    def _mangle_private(self, level, name):
-        pname = self.compile_if_not_str(level, name)
+    def _mangle_private(self, scope, name):
+        pname = self.compile_if_not_str(scope, name)
         pname = pname if pname.startswith("_") else "_" + pname
         return pname
 
-    def _mangle_global(self, level, name):
-        gname = self.compile_if_not_str(level, name)
+    def _mangle_global(self, scope, name):
+        gname = self.compile_if_not_str(scope, name)
         gname = gname.lstrip("_")
         return gname
 
-    def _mangle_binding(self, level, name):
-        if name in self.global_symbols:
-            return self._mangle_global(level, name)
-        else:
-            return self._mangle_private(level, name)
+    # def _mangle_binding(self, scope, name):
+    #     # if name in self.global_symbols:
+    #     #     return self._mangle_global(scope, name)
+    #     if False:
+    #         pass
+    #     else:
+    #         return self._mangle_private(scope, name)
 
-    def compile_function_call(self, level, root, args):
-        sroot = self.compile_if_not_str(level, root)
-        sargs = [
-            self._mangle_binding(level, arg) if isinstance(arg, SQFSymbol) else arg
-            for arg in args
-        ]
-        sargs = [self.compile_if_not_str(level, arg) for arg in sargs]
+    def compile_function_call(self, scope, root, args):
+        sroot = self.compile_if_not_str(scope, root)
+        # sargs = [
+        #     self._mangle_binding(scope, arg) if isinstance(arg, SQFSymbol) else arg
+        #     for arg in args
+        # ]
+        sargs = [self.compile_if_not_str(scope, arg) for arg in args]
         if is_builtin(sroot):
             if len(args) == 0:
                 return sroot
@@ -119,17 +149,17 @@ class SQFASTCompiler(object):
     @special("/", [many(FORM)])
     @special("*", [many(FORM)])
     @special("-", [many(FORM)])
-    def compile_math_expression(self, level, expr, root, args):
+    def compile_math_expression(self, scope, expr, root, args):
         sroot = str(root)
-        sargs = [self.compile_if_not_str(level, arg) for arg in args]
+        sargs = [self.compile_if_not_str(scope, arg) for arg in args]
         buff = f" {sroot} ".join(sargs)
         return f"({buff})"
 
     @special(["and", "or"], [many(FORM)])
-    def compile_and_or_expression(self, level, expr, root, args):
-        sroot = self.compile_if_not_str(level, root)
+    def compile_and_or_expression(self, scope, expr, root, args):
+        sroot = self.compile_if_not_str(scope, root)
         sroot = _operator_lookup[sroot]
-        args = [self.compile_if_not_str(level, arg) for arg in args]
+        args = [self.compile_if_not_str(scope, arg) for arg in args]
 
         if len(args) == 0:
             return "true"
@@ -141,82 +171,99 @@ class SQFASTCompiler(object):
     @special(["=", "<", "<=", ">", ">="], [oneplus(FORM)])
     @special("!=", [times(2, float("inf"), FORM)])
     @special("%", [times(2, 2, FORM)])
-    def compile_math_expression(self, level, expr, root, args):
-        sroot = self.compile_if_not_str(level, root)
+    def compile_math_expression(self, scope, expr, root, args):
+        sroot = self.compile_if_not_str(scope, root)
         sroot = _operator_lookup[sroot]
-        sargs = [self.compile_if_not_str(level, arg) for arg in args]
+        sargs = [self.compile_if_not_str(scope, arg) for arg in args]
 
         if len(sargs) == 1:
             return "true"
 
         buff = []
         for left, right in pairwise(sargs):
-            left = self.compile_if_not_str(level, left)
-            right = self.compile_if_not_str(level, right)
+            left = self.compile_if_not_str(scope, left)
+            right = self.compile_if_not_str(scope, right)
             buff += [f"({left} {sroot} {right})"]
         return " && ".join(buff)
 
     @special("def", [FORM, FORM])
-    def compile_def_expression(self, level, expr, root, name: str, value):
-        if name in self.global_symbols:
-            raise SyntaxError("Attempting to shadow global name with private name.")
+    def compile_def_expression(self, scope, expr, root, name: str, value):
+        # if name in self.global_symbols:
+        # raise SyntaxError("Attempting to shadow global name with private name.")
 
-        # pname = self.compile_if_not_str(level, name)
+        # pname = self.compile_if_not_str(scope, name)
         # pname = pname if pname.startswith("_") else "_" + pname
-        pname = self._mangle_private(level, name)
-        value = self.compile_if_not_str(level, value)
+        pname = self._mangle_private(scope, name)
+        value = self.compile_if_not_str(scope, value)
+
+        self.symbol_table.insert(scope, name, pname)
 
         return f"private {pname} = {value}"
 
     @special("defglobal", [FORM, FORM])
-    def compile_defglobal_expression(self, level, expr, root, name, value):
-        value = self.compile_if_not_str(level, value)
-        gname = self._mangle_global(level, name)
-        # gname = self.compile_if_not_str(level, name)
+    def compile_defglobal_expression(self, scope, expr, root, name, value):
+        value = self.compile_if_not_str(scope, value)
+        gname = self._mangle_global(scope, name)
+        # gname = self.compile_if_not_str(scope, name)
 
-        self.global_symbols[name] = gname
+        # self.global_symbols[name] = gname
+        self.symbol_table.insert(scope, name, gname)
 
         return f"{gname} = {value}"
 
     @special("setv", [FORM, FORM])
-    def compile_setv_expression(self, level, expr, root, name, value):
-        if name in self.global_symbols:
-            mangled_name = self.global_symbols[name]
-        else:
-            mangled_name = self._mangle_private(level, name)
+    def compile_setv_expression(self, scope, expr, root, name, value):
+        binding = self.symbol_table.lookup(scope, name)
+        if not binding:
+            raise SyntaxError(f"Binding {name} referenced before assignment")
 
-        value = self.compile_if_not_str(level, value)
+        # if name in self.global_symbols:
+        #     mangled_name = self.global_symbols[name]
+        # else:
+        #     mangled_name = self._mangle_private(scope, name)
 
-        return f"{mangled_name} = {value}"
+        value = self.compile_if_not_str(scope, value)
+
+        return f"{binding} = {value}"
 
     @special("fn", [FORM, many(FORM)])
-    def compile_fn_expression(self, level, expr, root, args, body):
+    def compile_fn_expression(self, scope, expr, root, args, body):
         if not isinstance(args, SQFList):
             raise SyntaxError("args must be a list")
 
-        sargs = map(self.compile_if_not_str, args)
-        sargs = ", ".join(f'"{arg}"' for arg in args)
+        # sargs = [self.compile_if_not_str(scope, arg) for arg in args]
+        new_scope = self.symbol_table.scope_from(scope)
+
+        sargs = [self._mangle_private(new_scope, sarg) for sarg in args]
+        for name, mname in zip(args, sargs):
+            self.symbol_table.insert(new_scope, name, mname)
+
+        sargs = ", ".join(f'"{arg}"' for arg in sargs)
         params = [f"params [{sargs}]"] if args else []
 
         buffer = []
         buffer += ["{"]
-        # buffer += [f"params [{sargs}];"]
-        buffer += [self._compile_implicit_do(level, params + body)]
+        buffer += [self._compile_implicit_do(new_scope, params + body)]
         buffer += ["}"]
 
         return self._seperator.join(buffer)
 
     @special("do", [many(FORM)])
-    def compile_do_expression(self, level, expr, root, body):
+    def compile_do_expression(self, scope, expr, root, body):
         return f"; {self._seperator}".join(
-            self.compile_if_not_str(level, expression) for expression in body
+            self.compile_if_not_str(scope, expression) for expression in body
         )
 
     @special("if", [FORM, FORM, maybe(FORM)])
-    def compile_if_expression(self, level, expr, root, cond, body, else_expr):
-        cond = self.compile_if_not_str(level, cond)
-        body = self.compile_if_not_str(level, body)
-        else_expr = self.compile_if_not_str(level, else_expr) if else_expr else None
+    def compile_if_expression(self, scope, expr, root, cond, body, else_expr):
+        cond = self.compile_if_not_str(scope, cond)
+
+        if_scope = self.symbol_table.scope_from(scope)
+        else_scope = self.symbol_table.scope_from(scope)
+        body = self.compile_if_not_str(if_scope, body)
+        else_expr = (
+            self.compile_if_not_str(else_scope, else_expr) if else_expr else None
+        )
 
         buff = [f"if ({cond}) then", "{", f"{body}", f"}}{'' if else_expr else ';'}"]
         if else_expr:
@@ -224,21 +271,25 @@ class SQFASTCompiler(object):
         return self._seperator.join(buff)
 
     @special("for", [FORM, many(FORM)])
-    def compile_for_expression(self, level, expr, root, cond, body):
+    def compile_for_expression(self, scope, expr, root, cond, body):
         if not isinstance(cond, SQFList):
             raise SyntaxError("condition must be a list")
 
         if len(cond) not in range(3, 4 + 1):
             raise SyntaxError(f"for takes 3 to 4 arguments. {len(cond)} given")
 
-        cond = [self.compile_if_not_str(level, val) for val in cond]
+        new_scope = self.symbol_table.scope_from(scope)
 
-        iterator = mangle(cond[0])
+        cond = [self.compile_if_not_str(scope, val) for val in cond]
+
+        iterator = self._mangle_private(new_scope, cond[0])
+        self.symbol_table.insert(new_scope, cond[0], iterator)
+
         start = cond[1]
         end = cond[2]
         step = cond[3] if len(cond) == 4 else None
 
-        body = self._compile_implicit_do(level, body)
+        body = self._compile_implicit_do(new_scope, body)
 
         buffer = []
         buffer += [
@@ -250,12 +301,14 @@ class SQFASTCompiler(object):
         return self._seperator.join(buffer)
 
     @special("while", [FORM, many(FORM)])
-    def compile_while_expression(self, level, expr, root, cond, body):
+    def compile_while_expression(self, scope, expr, root, cond, body):
         if not isinstance(cond, SQFExpression):
             raise SyntaxError("while condition must be an expression")
 
-        cond = self.compile_if_not_str(level, cond)
-        body = self._compile_implicit_do(level, body)
+        cond = self.compile_if_not_str(scope, cond)
+
+        new_scope = self.symbol_table.scope_from(scope)
+        body = self._compile_implicit_do(new_scope, body)
 
         buffer = [f"while {{{cond}}} do"]
         buffer += ["{", body, "}"]
@@ -263,7 +316,7 @@ class SQFASTCompiler(object):
         return self._seperator.join(buffer)
 
     @special("doseq", [FORM, many(FORM)])
-    def compile_doseq_expression(self, level, expr, root, initializer, body):
+    def compile_doseq_expression(self, scope, expr, root, initializer, body):
 
         if not isinstance(initializer, SQFList):
             raise SyntaxError("initializer must be a list")
@@ -273,13 +326,17 @@ class SQFASTCompiler(object):
                 "initializer must contain only the binding name and the sequence"
             )
 
+        new_scope = self.symbol_table.scope_from(scope)
+
         binding, seq = initializer
-        binding = self.compile_if_not_str(level, binding)
+        binding = self.compile_if_not_str(scope, binding)
+        self.symbol_table.insert(new_scope, initializer[0], binding)
+
         binding_expr = SQFExpression(
             [SQFSymbol("def"), SQFSymbol(binding), SQFSymbol("_x")]
         )
-        seq = self.compile_if_not_str(level, seq)
-        body = self._compile_implicit_do(level, [binding_expr] + body)
+        seq = self.compile_if_not_str(new_scope, seq)
+        body = self._compile_implicit_do(new_scope, [binding_expr] + body)
 
         buffer = ["{", body, "}"]
         buffer += [f"forEach {seq}"]
@@ -287,24 +344,29 @@ class SQFASTCompiler(object):
         return self._seperator.join(buffer)
 
     @builds_model(SQFString)
-    def compile_string(self, level, string):
+    def compile_string(self, scope, string):
         return f'"{string}"'
 
     @builds_model(SQFSymbol)
-    def compile_symbol(self, level, symbol):
-        return mangle(symbol)
+    def compile_symbol(self, scope, symbol):
+        lookup = self.symbol_table.lookup(scope, symbol)
+        if lookup:
+            return lookup
+        else:
+            return mangle(symbol)
 
     @builds_model(SQFList)
-    def compile_list(self, level, lst):
-        return f"[{', '.join(map(self.compile, lst))}]"
+    def compile_list(self, scope, lst):
+        # return f"[{', '.join(map(self.compile, lst))}]"
+        return f"[{', '.join(self.compile(x, scope) for x in lst)}]"
 
     @builds_model(SQFInteger)
     @builds_model(SQFFloat)
-    def compile_integer(self, level, integer):
+    def compile_integer(self, scope, integer):
         return str(integer)
 
     @builds_model(SQFExpression)
-    def compile_expression(self, level, expr):
+    def compile_expression(self, scope, expr):
         if not expr:
             raise SyntaxError("empty expression")
 
@@ -318,6 +380,6 @@ class SQFASTCompiler(object):
                     parse_tree = pattern.parse(args)
                 except NoParseError as e:
                     raise SyntaxError("Parse error for form")
-                return build_method(self, level, expr, sroot, *parse_tree)
+                return build_method(self, scope, expr, sroot, *parse_tree)
             else:
-                return self.compile_function_call(level, sroot, args)
+                return self.compile_function_call(scope, sroot, args)

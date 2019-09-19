@@ -19,5 +19,5 @@ def compile(text, pretty=False):
     ast = SQFExpression([SQFSymbol("do")] + tokens)
 
     compiler = SQFASTCompiler(pretty=pretty)
-    compiled_sqf = compiler.compile(ast)
+    compiled_sqf = compiler.compile_root(ast)
     return compiled_sqf
