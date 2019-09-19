@@ -86,6 +86,14 @@ def main(input, output, pretty=False, watch=False):
             compile_file(pinput, poutput, file, pretty=pretty)
         if watch:
             return start_watch(pinput, poutput, pretty=pretty)
+    else:
+        with open(pinput, 'r') as fin:
+            text = fin.read()
+            text = compile(text)
+            text = format(text) if pretty else text
+            click.echo(text)
+
+
 
     # with open(path, "r") as f:
     #     sqisp_text = f.read()
