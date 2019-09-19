@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = arma_lisp
+SPHINXPROJ    = sqisp
 SOURCEDIR     = .
 BUILDDIR      = _build
 

@@ -2,7 +2,7 @@
 Formats sqf files with proper indentation and new lines.
 
 Original version from https://github.com/Torndeco/SQF-Indenter
-by Torndeco and modified to work with arma_lisp.
+by Torndeco and modified to work with sqisp.
 """
 __author__ = "Torndeco, Steve Casey"
 

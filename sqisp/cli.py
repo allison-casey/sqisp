@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Console script for arma_lisp."""
+"""Console script for sqisp."""
 import sys
 import click
 import time
@@ -8,7 +8,7 @@ import logging
 
 from os import makedirs
 from pathlib import Path
-from arma_lisp import compile
+from sqisp import compile
 from .formatter import format
 
 from watchdog.observers import Observer
@@ -73,7 +73,7 @@ def start_watch(input_dir, output_dir, pretty=False):
     "-w", "--watch", is_flag=True, help="Automatically recompile modified files."
 )
 def main(input, output, pretty=False, watch=False):
-    """Console script for arma_lisp."""
+    """Console script for sqisp."""
 
     pinput = Path(input)
     poutput = Path(output if output else ".")
