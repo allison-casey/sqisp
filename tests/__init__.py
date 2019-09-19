@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-"""Unit test package for arma_lisp."""
+"""Unit test package for sqisp."""

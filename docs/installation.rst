@@ -12,7 +12,7 @@ To install Arma Lisp, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install arma_lisp
+    $ pip install sqisp
 
 This is the preferred method to install Arma Lisp, as it will always install the most recent stable release.
 
@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/sjcasey21/arma_lisp
+    $ git clone git://github.com/sjcasey21/sqisp
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/sjcasey21/arma_lisp/tarball/master
+    $ curl -OJL https://github.com/sjcasey21/sqisp/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/sjcasey21/arma_lisp
-.. _tarball: https://github.com/sjcasey21/arma_lisp/tarball/master
+.. _Github repo: https://github.com/sjcasey21/sqisp
+.. _tarball: https://github.com/sjcasey21/sqisp/tarball/master
