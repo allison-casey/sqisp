@@ -3,14 +3,14 @@ Arma Lisp
 ===========
 
 
-.. image:: https://img.shields.io/pypi/v/arma_lisp.svg
-        :target: https://pypi.python.org/pypi/arma_lisp
+.. image:: https://img.shields.io/pypi/v/sqisp.svg
+        :target: https://pypi.python.org/pypi/sqisp
 
-.. image:: https://img.shields.io/travis/sjcasey21/arma_lisp.svg
-        :target: https://travis-ci.org/sjcasey21/arma_lisp
+.. image:: https://img.shields.io/travis/sjcasey21/sqisp.svg
+        :target: https://travis-ci.org/sjcasey21/sqisp
 
-.. image:: https://readthedocs.org/projects/arma-lisp/badge/?version=latest
-        :target: https://arma-lisp.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/sqisp/badge/?version=latest
+        :target: https://sqisp.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 
@@ -20,7 +20,7 @@ A lisp dialect that compiles to sqf.
 
 
 * Free software: MIT license
-* Documentation: https://arma-lisp.readthedocs.io.
+* Documentation: https://sqisp.readthedocs.io.
 
 
 Features

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `arma_lisp` package."""
+"""Tests for `sqisp` package."""
 
 import pytest
 
 from click.testing import CliRunner
 
-from arma_lisp import arma_lisp
-from arma_lisp import cli
+from sqisp import sqisp
+from sqisp import cli
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def test_content(response):
 #     runner = CliRunner()
 #     result = runner.invoke(cli.main)
 #     assert result.exit_code == 0
-#     assert 'arma_lisp.cli.main' in result.output
+#     assert 'sqisp.cli.main' in result.output
 #     help_result = runner.invoke(cli.main, ['--help'])
 #     assert help_result.exit_code == 0
 #     assert '--help  Show this message and exit.' in help_result.output

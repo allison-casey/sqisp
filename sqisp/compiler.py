@@ -95,7 +95,7 @@ class SQFASTCompiler(object):
         scope = self.symbol_table.global_scope
         text = self.compile(tree, scope)
 
-        print(RenderTree(self.symbol_table.global_scope, style=AsciiStyle()))
+        # print(RenderTree(self.symbol_table.global_scope, style=AsciiStyle()))
 
         return text
 
