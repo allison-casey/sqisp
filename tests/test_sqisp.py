@@ -7,7 +7,7 @@ import pytest
 
 from click.testing import CliRunner
 
-from sqisp import sqisp
+# from sqisp import sqisp
 from sqisp import cli
 
 
