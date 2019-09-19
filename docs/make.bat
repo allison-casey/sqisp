@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=arma_lisp
+set SPHINXPROJ=sqisp
 
 if "%1" == "" goto help
 

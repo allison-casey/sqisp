@@ -11,7 +11,7 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["Click>=7.0", "rply", "funcparserlib"]
+requirements = ["Click>=7.0", "rply", "funcparserlib", "watchdog", "anytree"]
 
 setup_requirements = ["pytest-runner"]
 
@@ -29,19 +29,19 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     description="A lisp dialect that compiles to sqf.",
-    entry_points={"console_scripts": ["arma_lisp=arma_lisp.cli:main"]},
+    entry_points={"console_scripts": ["sqisp=sqisp.cli:main"]},
     install_requires=requirements,
     license="MIT license",
     long_description_content_type='text/x-rst',
     long_description=readme,
     include_package_data=True,
-    keywords="arma_lisp",
-    name="arma-lisp",
-    packages=find_packages(include=["arma_lisp", "arma_lisp.*"]),
+    keywords="sqisp",
+    name="sqisp",
+    packages=find_packages(include=["sqisp", "sqisp.*"]),
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
-    url="https://github.com/sjcasey21/arma_lisp",
-    version="version='0.3.5'",
+    url="https://github.com/sjcasey21/sqisp",
+    version="version='0.4.2'",
     zip_safe=False,
 )

@@ -1,3 +1,5 @@
+from pkg_resources import resource_stream, resource_string, resource_listdir
+
 __types = {}
 
 
@@ -7,18 +9,19 @@ def is_builtin(fn_name: str) -> bool:
 
 def load_types(path: str):
     global __types
-    with open(path, "r") as f:
-        for line in f:
-            fn_type = line[0]
-            if fn_type == "b":
-                key, value = parse_binary(line)
-                __types[key] = value
-            elif fn_type == "u":
-                key, value = parse_unary(line)
-                __types[key] = value
-            elif fn_type == "n":
-                key, value = parse_nullary(line)
-                __types[key] = value
+    f = resource_stream(__name__, 'types')
+    # with open(path, "r") as f:
+    for line in f:
+        fn_type = line[0]
+        if fn_type == "b":
+            key, value = parse_binary(line)
+            __types[key] = value
+        elif fn_type == "u":
+            key, value = parse_unary(line)
+            __types[key] = value
+        elif fn_type == "n":
+            key, value = parse_nullary(line)
+            __types[key] = value
 
 
 def parse_nullary(line: str):

@@ -51,7 +51,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	flake8 arma_lisp tests
+	flake8 sqisp tests
 
 test: ## run tests quickly with the default Python
 	pytest
@@ -60,15 +60,15 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source arma_lisp -m pytest
+	coverage run --source sqisp -m pytest
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/arma_lisp.rst
+	rm -f docs/sqisp.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ arma_lisp
+	sphinx-apidoc -o docs/ sqisp
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
