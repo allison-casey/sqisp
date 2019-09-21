@@ -10,8 +10,10 @@ def is_builtin(fn_name: str) -> bool:
 def load_types(path: str):
     global __types
     f = resource_stream(__name__, 'types')
+
     # with open(path, "r") as f:
     for line in f:
+        line = line.decode('utf-8')
         fn_type = line[0]
         if fn_type == "b":
             key, value = parse_binary(line)
