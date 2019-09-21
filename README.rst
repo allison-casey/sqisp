@@ -59,6 +59,7 @@ Input Arma Lisp
 ---------------
 
 .. code-block:: lisp
+
   ;; Import statement adds external sqf functions to the global namespace
   (import "someExternalFunction" "someOtherExternalFunction")
 
