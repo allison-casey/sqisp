@@ -4,7 +4,7 @@
 
 __author__ = """Steve Casey"""
 __email__ = 'stevecasey21@gmail.com'
-__version__ = '0.4.5'
+__version__ = '0.5.0'
 
 from .types import load_types
 from .lexer import lexer
