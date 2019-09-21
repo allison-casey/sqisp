@@ -92,6 +92,17 @@ def main(input, output, pretty=False, watch=False):
             text = fin.read()
             text = compile(text)
             text = format(text) if pretty else text
+
+        if poutput:
+            if poutput.suffix:
+                with open(poutput, 'w') as f:
+                    f.write(text)
+            else:
+                out_path = Path(poutput, pinput.parts[-1])
+                makedirs(out_path.parent, exist_ok=True)
+                with open(out_path, 'w') as f:
+                    f.write(text)
+        else:
             click.echo(text)
 
 
