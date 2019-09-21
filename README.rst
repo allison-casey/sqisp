@@ -22,6 +22,13 @@ A lisp dialect that compiles to sqf.
 * Free software: MIT license
 * Documentation: https://sqisp.readthedocs.io.
 
+Installation
+------------
+
+.. code-block:: bash
+
+   pip install sqisp
+
 
 Features
 ----------
@@ -57,6 +64,12 @@ Example
 
 Input Arma Lisp
 ---------------
+
+.. code-block:: bash
+
+  # will watch the current directory and compile all sqp files
+  # the same directory
+  sqisp -w .
 
 .. code-block:: lisp
 
