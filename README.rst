@@ -117,6 +117,7 @@ Output SQF
 -----------
 
 .. code-block::
+
   // imported someExternalFunction, someOtherExternalFunction;
   ("hello" == if (true) then
   {
