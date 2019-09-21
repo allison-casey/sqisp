@@ -143,7 +143,10 @@ class SQFASTCompiler(object):
             elif len(args) == 2:
                 return f"( {sargs[0]} {sroot} {sargs[1]} )"
         else:
-            return f"[{', '.join(sargs)}] call {sroot}"
+            binding = self.symbol_table.lookup(scope, root)
+            if not binding:
+                raise SyntaxError(f'function {root} referenced before assignment.')
+            return f"[{', '.join(sargs)}] call {binding}"
 
     @special("+", [many(FORM)])
     @special("/", [many(FORM)])
