@@ -1,7 +1,7 @@
 .direnv
 .envrc
-*.sqf
-*.sqp
+*.sqf*
+*.sqp*
 .#*
 
 # Byte-compiled / optimized / DLL files

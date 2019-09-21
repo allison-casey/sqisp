@@ -8,6 +8,7 @@ from funcparserlib.parser import (
     State,
 )
 from operator import add
+from itertools import repeat
 from math import isinf
 
 FORM = some(lambda _: True)

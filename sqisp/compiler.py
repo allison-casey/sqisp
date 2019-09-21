@@ -15,6 +15,7 @@ _model_compilers = {}
 _special_form_compilers = {}
 _operator_lookup = {
     "=": "==",
+    "!=": "!=",
     "and": "&&",
     "or": "||",
     ">": ">",
@@ -48,8 +49,8 @@ def builds_model(*model_types):
 
 
 class SymbolTable(object):
-    def __init__(self):
-        self.global_scope = Node({})
+    def __init__(self, globals):
+        self.global_scope = Node(globals)
         self._walker = Walker()
 
     def scope_from(self, scope):
@@ -81,7 +82,9 @@ class SQFASTCompiler(object):
     def __init__(self, pretty=False):
         self.pretty = pretty
         self._seperator = NEWLINE if pretty else " "
-        self.symbol_table = SymbolTable()
+
+        globals = {SQFSymbol('this'): '_this', SQFSymbol('x'): '_x'}
+        self.symbol_table = SymbolTable(globals)
 
     def compile_if_not_str(self, scope, value):
         # return value if isinstance(value, str) else self.compile(value)
@@ -170,6 +173,16 @@ class SQFASTCompiler(object):
             return args[0]
         else:
             return f" {sroot} ".join(args)
+
+    @special(['import'], [many(FORM)])
+    def compile_import_expression(self, scope, expr, root, args):
+        if any(not isinstance(arg, SQFString) for arg in args):
+            raise SyntaxError('Import only takes strings.')
+
+        for arg in args:
+            self.symbol_table.insert(self.symbol_table.global_scope, arg, str(arg))
+
+        return f"// imported {', '.join(args)}"
 
     @special(["=", "<", "<=", ">", ">="], [oneplus(FORM)])
     @special("!=", [times(2, float("inf"), FORM)])
