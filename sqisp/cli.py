@@ -77,6 +77,7 @@ def main(input, output, pretty=False, watch=False):
 
     pinput = Path(input)
     poutput = Path(output if output else ".")
+
     if pinput.is_dir():
         if not poutput.is_dir():
             raise ValueError("input and output paths must both be directories.")
