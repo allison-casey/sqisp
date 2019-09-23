@@ -176,8 +176,8 @@ class SQFASTCompiler(object):
 
     @special(['import'], [many(FORM)])
     def compile_import_expression(self, scope, expr, root, args):
-        if any(not isinstance(arg, SQFString) for arg in args):
-            raise SyntaxError('Import only takes strings.')
+        if any(not isinstance(arg, SQFSymbol) for arg in args):
+            raise SyntaxError(f'Import only takes symbols, received {args}.')
 
         for arg in args:
             self.symbol_table.insert(self.symbol_table.global_scope, arg, str(arg))
