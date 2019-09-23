@@ -1,5 +1,5 @@
 ===========
-Arma Lisp
+Sqisp
 ===========
 
 
@@ -15,19 +15,38 @@ Arma Lisp
 
 
 
+Status Quo Lisp or Sqisp is a lisp dialect that compiles to sqf. Its main goal is to unify sqf's 
+somewhat arbitrary and muddled syntax and enhance it with lisp's consistency and compile time macro capability.
 
-A lisp dialect that compiles to sqf.
+**NOTE**: Sqisp is in Beta and subject to change. A stable api will be released at v1.0.
 
 
-* Free software: MIT license
-* Documentation: https://sqisp.readthedocs.io.
 
 Installation
 ------------
+For most users it is recommended to to install sqisp from pypi with 
 
 .. code-block:: bash
 
    pip install sqisp
+
+or from github with
+   
+.. code-block:: bash
+    
+    pip install git+https://github.com/sjcasey21/sqisp.git
+ 
+To stay up to date with development its recommended to install sqisp from its source.
+Its *highly* recommended to install from a virtual environment.
+
+.. code-block:: bash
+
+    git clone https://github.com/sjcasey21/sqisp.git
+    cd ./sqisp
+    python setup.py install --user
+    
+
+
 
 
 Features
@@ -51,7 +70,7 @@ Expressions
 - [x] while
 - [x] fn
 - [x] foreach
-- [ ] case      [NOTE]: May be unnecessary
+- [ ] case      [NOTE]: Will be implemented with macros
 - [ ] exitwith  [NOTE]: May be unnecessary
 - [ ] waituntil [NOTE]: May be unnecessary
 - [ ] default   [NOTE]: May be unnecessary
@@ -63,8 +82,7 @@ Example
 -----------
 
 Input Arma Lisp
----------------
-
+~~~~~~~~~~~~~~~
 .. code-block:: bash
 
   # will watch the current directory and compile all sqp files
@@ -129,7 +147,7 @@ Input Arma Lisp
       (hint x))
 
 Output SQF
------------
+~~~~~~~~~~~~~~~
 
 .. code-block::
 
@@ -201,3 +219,10 @@ Output SQF
   {
       private _x = _x;
   ( hint _x ) } forEach [1, 2, 3, 4]
+  
+  
+  
+
+
+* Free software: MIT license
+* Documentation: https://sqisp.readthedocs.io.
