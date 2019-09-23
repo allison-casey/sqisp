@@ -42,6 +42,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/sjcasey21/sqisp',
-    version='0.6.2',
+    version='version="0.6.3"',
     zip_safe=False,
 )
