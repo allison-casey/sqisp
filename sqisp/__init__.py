@@ -6,6 +6,7 @@ __author__ = """Steve Casey"""
 __email__ = 'stevecasey21@gmail.com'
 __version__ = '__version__ = "0.6.4"'
 
+import hy
 from .types import load_types
 from .lexer import lexer
 from .models import SQFExpression, SQFSymbol
