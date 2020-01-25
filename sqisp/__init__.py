@@ -4,7 +4,7 @@
 
 __author__ = """Steve Casey"""
 __email__ = 'stevecasey21@gmail.com'
-__version__ = '__version__ = "0.7.0"'
+__version__ = '__version__ = "0.7.1"'
 
 import hy
 from .types import load_types
