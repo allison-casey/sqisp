@@ -1,8 +1,10 @@
 (import copy
+        [.macros [load-macros sqisp-macroexpand __sqisp_macros__]]
         [.types [is-builtin]]
         [.model-patterns [FORM whole times]]
         [.utils [mangle pairwise]]
         [.models [*]]
+        [pprint [pprint]]
         [funcparserlib.parser [many oneplus maybe NoParseError]]
         [collections [defaultdict]]
         [anytree [Walker Node RenderTree AsciiStyle]])
@@ -66,7 +68,9 @@
     (setv self.pretty pretty
           self._seperator (if pretty NEWLINE " ")
           self.symbol-table (SymbolTable {(SQFSymbol "this") "_this"
-                                          (SQFSymbol "x") "_x"})))
+                                          (SQFSymbol "x") "_x"}))
+    (load-macros)
+    )
 
   (defn compile-if-not-str
     [self scope value]
@@ -177,8 +181,8 @@
             (str.join " && " buff)))))
 
   (with-decorator
-    (special "def" [FORM FORM])
-    (defn compile-def-expression
+    (special "setv" [FORM FORM])
+    (defn compile-setv-expression
       [self scope expr root -name value]
       (setv pname (self._mangle-private scope -name)
             value (self.compile-if-not-str scope value))
@@ -194,15 +198,15 @@
       (self.symbol-table.insert scope -name gname)
       f"{gname} = {value}"))
 
-  (with-decorator
-    (special "setv" [FORM FORM])
-    (defn compile-setv-expression
-      [self scope expr root -name value]
-      (setv binding (self.symbol-table.lookup scope -name))
-      (if-not binding
-              (raise (SyntaxError f"Binding {name} referenced before assignment")))
+  ;; (with-decorator
+  ;;   (special "setv" [FORM FORM])
+  ;;   (defn compile-setv-expression
+  ;;     [self scope expr root -name value]
+  ;;     (setv binding (self.symbol-table.lookup scope -name))
+  ;;     (if-not binding
+  ;;             (raise (SyntaxError f"Binding {-name} referenced before assignment")))
 
-      f"{binding} = {(self.compile-if-not-str scope value)}"))
+  ;;     f"{binding} = {(self.compile-if-not-str scope value)}"))
 
   (with-decorator
     (special "fn" [FORM (many FORM)])
@@ -252,6 +256,10 @@
       [self scope expr root pred body]
       (if-not (isinstance pred SQFList)
               (raise (SyntaxError "condition must be a list")))
+
+      (if (= (len pred) 2)
+          (return (self._compile-doseq-expression scope expr root pred body)))
+
       (if (not-in (len pred) (range 3 (+ 4 1)))
           (raise (SyntaxError f"for takes 3 to 4 arguments {(len cond)} given.")))
 
@@ -288,30 +296,28 @@
                     "}"])
       (self._seperator.join buffer)))
 
-  (with-decorator
-    (special "doseq" [FORM (many FORM)])
-    (defn compile-doseq-expression
-      [self scope expr root initializer body]
-      (if-not (isinstance initializer SQFList)
-              (raise (SyntaxError "Initializer must be a list")))
+  (defn _compile-doseq-expression
+    [self scope expr root initializer body]
+    (if-not (isinstance initializer SQFList)
+            (raise (SyntaxError "Initializer must be a list")))
 
-      (if
-        (!= (len initializer) 2)
-        (raise
-          (SyntaxError
-            "Initializer must contain only the binding name and the sequence")))
+    (if
+      (!= (len initializer) 2)
+      (raise
+        (SyntaxError
+          "Initializer must contain only the binding name and the sequence")))
 
-      (setv new-scope (self.symbol-table.scope-from scope)
-            (, binding seq) initializer
-            binding (self.compile-if-not-str scope binding))
-      (self.symbol-table.insert new-scope (get initializer 0) binding)
-      (setv binding-expr (SQFExpression [(SQFSymbol "def")
-                                         (SQFSymbol binding)
-                                         (SQFSymbol "_x")])
-            seq (self.compile-if-not-str new-scope seq)
-            body (self._compile-implicit-do new-scope (+ [binding-expr] body))
-            buffer ["{" body "}" f"forEach {seq}"])
-      (self._seperator.join buffer)))
+    (setv new-scope (self.symbol-table.scope-from scope)
+          (, binding seq) initializer
+          binding (self.compile-if-not-str scope binding))
+    (self.symbol-table.insert new-scope (get initializer 0) binding)
+    (setv binding-expr (SQFExpression [(SQFSymbol "setv")
+                                       (SQFSymbol binding)
+                                       (SQFSymbol "_x")])
+          seq (self.compile-if-not-str new-scope seq)
+          body (self._compile-implicit-do new-scope (+ [binding-expr] body))
+          buffer ["{" body "}" f"forEach {seq}"])
+    (self._seperator.join buffer))
 
   (with-decorator
     (builds-model SQFString)
@@ -343,6 +349,7 @@
     (builds-model SQFExpression)
     (defn compile-expression
       [self scope expr]
+      (setv expr (sqisp-macroexpand expr))
       (if-not expr (raise (SyntaxError "Empty expression.")))
       (setv (, root #* args) (list expr)
             func None)
