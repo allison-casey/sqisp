@@ -66,7 +66,7 @@
   (defn --init--
     [self &optional [pretty False]]
     (setv self.pretty pretty
-          self._seperator (if pretty NEWLINE " ")
+          self._seperator (if pretty NEWLINE "")
           self.symbol-table (SymbolTable {(SQFSymbol "this") "_this"
                                           (SQFSymbol "x") "_x"}))
     (load-macros)
@@ -123,7 +123,7 @@
                 sargs (str.join ", " sargs))
           (if-not binding
                   (raise (SyntaxError f"function {root} referenced before assignment."))
-                  f"[{sargs}] call {binding}"))))
+                  f"([{sargs}] call {binding})"))))
 
   (with-decorator
     (special "+" [(many FORM)])
