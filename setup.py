@@ -35,6 +35,7 @@ setup(
     long_description_content_type="text/x-rst",
     long_description=readme,
     include_package_data=True,
+    package_data={"sqisp": ["*.py", "*.hy"}
     keywords="sqisp",
     name="sqisp",
     packages=find_packages(include=["sqisp", "sqisp.*"]),
