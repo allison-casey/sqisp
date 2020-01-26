@@ -191,7 +191,7 @@
             defined-in-scope (bool (self.symbol-table.lookup scope -name)))
       (if defined-in-scope
           f"{pname} = {value}"
-          (raise SyntaxError f"attempting to reset undefined var: {-name}"))))
+          (raise (SyntaxError f"attempting to reset undefined var: {-name}")))))
 
   (with-decorator
     (special "setv" [FORM FORM])
