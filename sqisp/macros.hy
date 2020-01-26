@@ -5,8 +5,8 @@
         [sqisp.parser [parser ParserState]]
         [hy.models [*]]
         [sqisp.models [*]]
-        [hy.core.language [first rest interleave]]
-        [itertools [repeat]]
+        [hy.core.language [*]]
+        [itertools [*]]
         )
 
 (defn replace-defmacro [tree]
