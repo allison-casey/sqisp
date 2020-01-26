@@ -190,7 +190,7 @@
       f"private {pname} = {value}"))
 
   (with-decorator
-    (special "defglobal" [FORM FORM])
+    (special "setg" [FORM FORM])
     (defn compile-defglobal-expression
       [self scope expr root -name value]
       (setv value (self.compile-if-not-str scope value)
@@ -274,7 +274,7 @@
             step (if (= (len pred) 4) (get pred 3))
             body (self._compile-implicit-do new-scope body)
             sstep (if step f"step {step} " "")
-            buffer [f"for {iterator} from {start} to {end} {sstep}do"
+            buffer [f"for \"{iterator}\" from {start} to {end} {sstep}do"
                     "{"
                     body
                     "}"])
