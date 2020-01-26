@@ -33,3 +33,6 @@
 
 (defmacro unless [test &rest body]
     `(if-not ~test (do ~@body)))
+
+(defmacro apply [fn-name &rest args]
+    `(fn-name ~@args))
