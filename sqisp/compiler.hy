@@ -157,7 +157,10 @@
           (raise (SyntaxError f"Import only takes symbols, received {args}")))
 
       (for [arg args]
-        (self.symbol-table.insert self.symbol-table.global-scope arg (str arg)))
+        (self.symbol-table.insert
+          self.symbol-table.global-scope
+          arg
+          (self._mangle-global arg)))
 
       (+ "// imported " (str.join ", " args))))
 
