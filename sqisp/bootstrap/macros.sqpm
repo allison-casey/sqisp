@@ -37,18 +37,20 @@
 (defmacro cond [ &rest branches]
     (or branches
         (return))
-    (print branches)
 
-    `(if ~@(reduce
-               +
-               (gfor
-                   branch branches
-                   (if
-                       (not (and (is (type branch) SQFList) branch))
-                       (macro-error branch "each cond branch needs to be a nonempty list")
-                       (= (len branch) 1) (do
-                                              (setv g (gensym))
-                                              [`(do (setv ~g ~(first branch)) ~g) g])
-                       True
-                       [(first branch) `(do ~@(cut branch 1))])))))
+    (setv out
+        `(if ~@(reduce
+                   +
+                   (gfor
+                       branch branches
+                       (if
+                           (not (and (is (type branch) SQFList) branch))
+                           (macro-error branch "each cond branch needs to be a nonempty list")
+                           (= (len branch) 1) (do
+                                                  (setv g (gensym))
+                                                  [`(do (setv ~g ~(first branch)) ~g) g])
+                           True
+                           [(first branch) `(do ~@(cut branch 1))])))))
+    (print out)
+    out)
 ;; %%
