@@ -33,6 +33,19 @@
 
 (defmacro unless [test &rest body]
     `(if-not ~test (do ~@body)))
+(defmacro cond [&rest branches]
+    (or branches
+        (return))
 
-(defmacro apply [fn-name &rest args]
-    `(fn-name ~@args))
+    `(if ~@(reduce
+               +
+               (gfor
+                   branch branches
+                   (if
+                       (not (and (is (type branch) SQFList) branch))
+                       (macro-error branch "each cond branch needs to be a nonempty list")
+                       (= (len branch) 1) (do
+                                              (setv g (gensym))
+                                              [`(do (setv ~g ~(first branch)) ~g) g])
+                       True
+                       [(first branch) `(do ~@(cut branch 1))])))))
