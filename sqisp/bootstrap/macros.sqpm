@@ -33,9 +33,11 @@
 
 (defmacro unless [test &rest body]
     `(if-not ~test (do ~@body)))
-(defmacro cond [&rest branches]
+
+(defmacro cond [ &rest branches]
     (or branches
         (return))
+    (print branches)
 
     `(if ~@(reduce
                +
@@ -49,3 +51,4 @@
                                               [`(do (setv ~g ~(first branch)) ~g) g])
                        True
                        [(first branch) `(do ~@(cut branch 1))])))))
+;; %%
