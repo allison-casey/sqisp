@@ -4,6 +4,12 @@
           (raise (SyntaxError "defn takes a name as a first argument")))
   `(setv ~name (fn ~@args)))
 
+(defmacro defglobal
+  [name &rest args]
+  (if-not (= (type name) SQFSymbol)
+          (raise (SyntaxError "defn takes a name as a first argument")))
+  `(setg ~name (fn ~@args)))
+
 (defmacro -> [head &rest args]
     (setv ret head)
     (for [node args]
@@ -34,21 +40,10 @@
 (defmacro unless [test &rest body]
     `(if-not ~test (do ~@body)))
 
-(defmacro cond [&rest branches]
-    (or branches
-        (return))
-
-    (setv out
-        `(if ~@(reduce + (gfor
-                             branch branches
-                             (if
-                                 (not (and (is (type branch) SQFList) branch))
-                                 (macro-error branch "each cond branch needs to be a nonempty list")
-                                 (= (len branch) 1) (do
-                                                        (setv g (gensym))
-                                                        [`(do (setv ~g ~(first branch)) ~g) g])
-                                 True
-                                 [(first branch) `(do ~@(cut branch 1))])))))
-    (print out)
-    out)
-;; %%
+(defmacro cond [&rest clauses]
+  (or clauses (return))
+  `(if ~(first clauses)
+             ~(if (second clauses)
+                  (second clauses)
+                  (raise (SyntaxError "cond requires an even number of forms")))
+             ~(if (cut clauses 2) `(cond ~@(cut clauses 2)))))

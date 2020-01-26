@@ -237,6 +237,7 @@
 
   (with-decorator
     (special "if" [FORM FORM (maybe FORM)])
+    (special "if*" [FORM FORM (maybe FORM)])
     (defn compile-if-expression
       [self scope expr root pred body else_expr]
       (setv pred (self.compile-if-not-str scope pred)

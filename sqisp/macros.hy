@@ -1,6 +1,7 @@
 (import hy
         importlib
         importlib.resources
+        [pprint [pprint]]
         [sqisp.lexer [lexer]]
         [sqisp.parser [parser ParserState]]
         [hy.models [*]]
