@@ -160,7 +160,7 @@
         (self.symbol-table.insert
           self.symbol-table.global-scope
           arg
-          (self._mangle-global arg)))
+          (self._mangle-global self.symbol-table.global-scope arg)))
 
       (+ "// imported " (str.join ", " args))))
 
