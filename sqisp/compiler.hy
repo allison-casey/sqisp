@@ -182,18 +182,25 @@
                     right (self.compile-if-not-str scope right))
               (buff.append f"({left} {sroot} {right})"))
             (str.join " && " buff)))))
+  (with-decorator
+    (special "reset!" [FORM FORM])
+    (defn compile-reset-expression
+      [self scope expr root -name value]
+      (setv pname (self._mangle-private scope -name)
+            value (self.compile-if-not-str scope value)
+            defined-in-scope (bool (self.symbol-table.lookup scope -name)))
+      (if defined-in-scope
+          f"{pname} = {value}"
+          (raise SyntaxError f"attempting to reset undefined var: {-name}"))))
 
   (with-decorator
     (special "setv" [FORM FORM])
     (defn compile-setv-expression
       [self scope expr root -name value]
       (setv pname (self._mangle-private scope -name)
-            value (self.compile-if-not-str scope value)
-            defined-in-scope (bool (self.symbol-table.lookup scope -name)))
+            value (self.compile-if-not-str scope value))
       (self.symbol-table.insert scope -name pname)
-      (if defined-in-scope
-          f"{pname} = {value}"
-          f"private {pname} = {value}")))
+      f"private {pname} = {value}"))
 
   (with-decorator
     (special "setg" [FORM FORM])
