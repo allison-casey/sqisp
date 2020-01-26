@@ -188,9 +188,12 @@
     (defn compile-setv-expression
       [self scope expr root -name value]
       (setv pname (self._mangle-private scope -name)
-            value (self.compile-if-not-str scope value))
+            value (self.compile-if-not-str scope value)
+            defined-in-scope (bool (self.symbol-table.lookup scope -name)))
       (self.symbol-table.insert scope -name pname)
-      f"private {pname} = {value}"))
+      (if defined-in-scope
+          f"{pname} = {value}"
+          f"private {pname} = {value}")))
 
   (with-decorator
     (special "setg" [FORM FORM])
