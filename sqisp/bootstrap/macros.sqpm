@@ -1,0 +1,35 @@
+(defmacro defn
+  [name &rest args]
+  (if-not (= (type name) SQFSymbol)
+          (raise (SyntaxError "defn takes a name as a first argument")))
+  `(setv ~name (fn ~@args)))
+
+(defmacro -> [head &rest args]
+    (setv ret head)
+    (for [node args]
+        (setv ret (if (isinstance node SQFExpression)
+                      `(~(first node) ~ret ~@(rest node))
+                      `(~node ~ret))))
+    ret)
+
+(defmacro ->> [head &rest args]
+    (setv ret head)
+    (for [node args]
+        (setv ret (if (isinstance node SQFExpression)
+                      `(~@node ~ret)
+                      `(~node ~ret))))
+    ret)
+
+(defmacro as-> [head name &rest args]
+    `(do (setv ~name ~head)
+         ~@(lfor arg args `(setv ~name ~arg))
+         ~name))
+
+(defmacro if-not [test not-branch &optional yes-branch]
+    `(if (not ~test) ~not-branch ~yes-branch))
+
+(defmacro when [test &rest body]
+    `(if ~test (do ~@body)))
+
+(defmacro unless [test &rest body]
+    `(if-not ~test (do ~@body)))
