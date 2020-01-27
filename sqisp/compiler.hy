@@ -211,16 +211,6 @@
       (self.symbol-table.insert scope -name gname)
       f"{gname} = {value}"))
 
-  ;; (with-decorator
-  ;;   (special "setv" [FORM FORM])
-  ;;   (defn compile-setv-expression
-  ;;     [self scope expr root -name value]
-  ;;     (setv binding (self.symbol-table.lookup scope -name))
-  ;;     (if-not binding
-  ;;             (raise (SyntaxError f"Binding {-name} referenced before assignment")))
-
-  ;;     f"{binding} = {(self.compile-if-not-str scope value)}"))
-
   (with-decorator
     (special "fn" [FORM (many FORM)])
     (defn compile-fn-expression
