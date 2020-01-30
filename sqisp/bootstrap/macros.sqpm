@@ -10,6 +10,14 @@
           (raise (SyntaxError "defn takes a name as a first argument")))
   `(setg ~name (fn ~@args)))
 
+(defmacro defn-file
+  [args &rest body]
+  (if-not (= (type args) SQFList)
+          (raise (SyntaxError "defn-file takes a list as its first argument")))
+
+  `(do (params ~@args)
+       ~@body))
+
 (defmacro -> [head &rest args]
     (setv ret head)
     (for [node args]

@@ -65,12 +65,12 @@
 (defclass SQFASTCompiler [object]
   (defn --init--
     [self &optional [pretty False]]
+    (print "in init")
     (setv self.pretty pretty
           self._seperator (if pretty NEWLINE "")
           self.symbol-table (SymbolTable {(SQFSymbol "this") "_this"
                                           (SQFSymbol "x") "_x"}))
-    (load-macros)
-    )
+    (load-macros))
 
   (defn compile-if-not-str
     [self scope value]
@@ -114,10 +114,12 @@
     (setv sroot (self.compile-if-not-str scope root)
           sargs (lfor arg args (self.compile-if-not-str scope arg)))
 
+
     (if (is-builtin sroot)
         (cond [(zero? (len args)) sroot]
-              [(= (len args) 1) f"( {sroot} {(get sargs 0)} )"]
-              [(= (len args) 2) f"( {(get sargs 0)} {sroot} {(get sargs 1)} )"])
+              [(= (len args) 1) f"({sroot} {(get sargs 0)})"]
+              [(= (len args) 2) f"({(get sargs 0)} {sroot} {(get sargs 1)})"]
+              [True f"({(get sargs 0)} {sroot} [(.join \", \" (cut sargs 1))])"])
         (do
           (setv binding (self.symbol-table.lookup scope root)
                 sargs (str.join ", " sargs))
@@ -229,6 +231,21 @@
 
       (self._seperator.join
         ["{"  (self._compile-implicit-do new-scope (+ params body)) "}"])))
+
+  (with-decorator
+    (special "params" [(many FORM)])
+    (defn compile-params-expression
+      [self scope expr root symbols]
+      (if-not (all (gfor sym symbols (isinstance sym SQFSymbol)))
+              (raise (ValueError "Params takes a list of symbols only")))
+
+      (setv args (lfor sym symbols (self._mangle-private scope sym)))
+
+      (for [(, -name mname) (zip symbols args)]
+            (self.symbol-table.insert scope -name mname))
+
+      (setv sargs (.join ", " (gfor arg args f"\"{arg}\"")))
+      f"params [{sargs}];"))
 
   (with-decorator
     (special "do" [(many FORM)])
@@ -353,6 +370,7 @@
     (builds-model SQFExpression)
     (defn compile-expression
       [self scope expr]
+
       (setv expr (sqisp-macroexpand expr))
       (if-not expr (raise (SyntaxError "Empty expression.")))
       (setv (, root #* args) (list expr)
