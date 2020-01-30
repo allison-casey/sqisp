@@ -52,8 +52,8 @@
         (.split $ "_")
         (+ (get $ 0) (.join "" (gfor x (cut $ 1) (.title x))))))
 
-(defn mangle-cfgfunc [s]
+(defn mangle-cfgfunc [s &optional [qualified True]]
   (->> s
        mangle
        to-camel-case
-       (+ "sqisp_fnc_")))
+       (+ (if qualified "sqisp_fnc_" ""))))
