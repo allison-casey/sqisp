@@ -5,12 +5,16 @@ import sys
 import click
 import time
 import logging
+import importlib.resources
+import hy
 
 from os import makedirs
 from pathlib import Path
 from sqisp import compile
 from .formatter import format
 from .compiler import SQFASTCompiler
+from .bootstrap import stdlib
+from .utils import mangle_cfgfunc
 
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -58,6 +62,18 @@ def start_watch(input_dir, output_dir, pretty=False):
         observer.stop()
     observer.join()
 
+DESCRIPTION_TEMPLATE = '''
+class CfgFunctions
+{{
+	class sqisp
+	{{
+		class stdlib
+		{{
+			{}
+		}};
+	}};
+}};
+'''
 
 @click.command()
 @click.argument("input", type=click.Path(exists=True))
@@ -73,11 +89,32 @@ def start_watch(input_dir, output_dir, pretty=False):
 @click.option(
     "-w", "--watch", is_flag=True, help="Automatically recompile modified files."
 )
-def main(input, output, pretty=False, watch=False):
+@click.option(
+    "-n", "--no-stdlib", is_flag=True, help="If set, won't compile the stdlib.")
+def main(input, output, pretty=False, watch=False, no_stdlib=False):
     """Console script for sqisp."""
 
     pinput = Path(input)
     poutput = Path(output if output else ".")
+
+    if not no_stdlib:
+        paths = [Path(path)
+                 for path in importlib.resources.contents(stdlib)
+                 if ".sqp" in path]
+        compiler = SQFASTCompiler()
+        cfgfuncs = []
+        for path in paths:
+            text = compile(importlib.resources.read_text(stdlib, path),
+                           compiler=compiler)
+            mangled_name = mangle_cfgfunc(path.stem, qualified=False)
+            out_path = Path(poutput, "stdlib", mangled_name + ".sqf")
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(text)
+
+            cfgfuncs.append(f'class {mangled_name} {{file = "{out_path}"}}')
+        description_ext = DESCRIPTION_TEMPLATE.format(
+            ("\n" + " " * 24).join(cfgfuncs))
+        Path(poutput, "description.ext").write_text(description_ext)
 
     if pinput.is_dir():
         if poutput.suffix:
@@ -100,7 +137,7 @@ def main(input, output, pretty=False, watch=False):
                 with open(poutput, 'w') as f:
                     f.write(text)
             else:
-                out_path = Path(poutput, pinput.parts[-1])
+                out_path = Path(poutput, pinput.stem + ".sqf")
                 makedirs(out_path.parent, exist_ok=True)
                 with open(out_path, 'w') as f:
                     f.write(text)
