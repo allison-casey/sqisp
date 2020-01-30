@@ -7,6 +7,7 @@ __email__ = 'stevecasey21@gmail.com'
 __version__ = '__version__ = "0.9.0"'
 
 import hy
+
 from .types import load_types
 from .lexer import lexer
 from .models import SQFExpression, SQFSymbol
@@ -14,11 +15,13 @@ from .parser import parser, ParserState
 from .compiler import SQFASTCompiler
 
 
-def compile(text, pretty=False):
+def compile(text, pretty=False, compiler=None):
     load_types("types")
-    tokens = parser.parse(lexer.lex(text.replace(",", "")), state=ParserState())
+
+    tokens = parser.parse(lexer.lex(text.replace(",", "")),
+                          state=ParserState())
     ast = SQFExpression([SQFSymbol("do")] + tokens)
 
-    compiler = SQFASTCompiler(pretty=pretty)
+    compiler = compiler if compiler else SQFASTCompiler(pretty=pretty)
     compiled_sqf = compiler.compile_root(ast)
     return compiled_sqf

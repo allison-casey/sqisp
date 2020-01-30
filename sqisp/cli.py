@@ -10,6 +10,7 @@ from os import makedirs
 from pathlib import Path
 from sqisp import compile
 from .formatter import format
+from .compiler import SQFASTCompiler
 
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -17,7 +18,7 @@ from watchdog.events import PatternMatchingEventHandler
 IGNORE_PATTERNS = [r".#"]
 
 
-def compile_file(pinput, poutput, file, pretty=False):
+def compile_file(pinput, poutput, file, pretty=False, compiler=None):
     if any(ignore in str(file) for ignore in IGNORE_PATTERNS):
         return None
     makedirs(Path(poutput, file).parent, exist_ok=True)
@@ -25,7 +26,7 @@ def compile_file(pinput, poutput, file, pretty=False):
         Path(poutput, file.stem + ".sqf"), "w"
     ) as fout:
         text = fin.read()
-        text = compile(text)
+        text = compile(text, compiler=compiler)
         text = format(text) if pretty else text
         fout.write(text)
 
@@ -83,8 +84,9 @@ def main(input, output, pretty=False, watch=False):
             raise ValueError("input and output paths must both be directories.")
 
         sqp_files = pinput.rglob("*.sqp")
+        compiler = SQFASTCompiler(pretty=pretty)
         for file in sqp_files:
-            compile_file(pinput, poutput, file, pretty=pretty)
+            compile_file(pinput, poutput, file, pretty=pretty, compiler=compiler)
         if watch:
             return start_watch(pinput, poutput, pretty=pretty)
     else:
