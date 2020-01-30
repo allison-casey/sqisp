@@ -11,6 +11,7 @@
 (defn is-sqf-keyword [s]
   (bool (re.fullmatch keyword-regex s)))
 
+
 (defn mangle [s]
   (defn unicode->hex [uchar]
     (if (and (= (len uchar) 1) (< (ord uchar) 128))
@@ -45,3 +46,14 @@
                                                      f"U{(unicode->hex c)}"))))))))
   (assert is-sqf-keyword x)
   (+ leading-underscores s))
+
+(defn to-camel-case [s]
+  (as-> s $
+        (.split $ "_")
+        (+ (get $ 0) (.join "" (gfor x (cut $ 1) (.title x))))))
+
+(defn mangle-cfgfunc [s]
+  (->> s
+       mangle
+       to-camel-case
+       (+ "sqisp_fnc_")))
