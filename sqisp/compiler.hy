@@ -3,7 +3,7 @@
         [.macros [load-macros sqisp-macroexpand __sqisp_macros__]]
         [.types [is-builtin]]
         [.model-patterns [FORM whole times]]
-        [.utils [mangle pairwise]]
+        [.utils [mangle-cfgfunc mangle pairwise]]
         [.models [*]]
         [.bootstrap [stdlib]]
         [pathlib [Path]]
@@ -82,7 +82,9 @@
         (self.symbol-table.insert
           self.symbol-table.global-scope
           fn-name
-          (self._mangle-global self.symbol-table.global-scope (mangle fn-name))))))
+          (self._mangle-global
+            self.symbol-table.global-scope
+            (mangle-cfgfunc fn-name))))))
 
   (defn compile-if-not-str
     [self scope value]
