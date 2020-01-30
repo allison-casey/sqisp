@@ -1,16 +1,18 @@
 (import copy
+        importlib.resources
         [.macros [load-macros sqisp-macroexpand __sqisp_macros__]]
         [.types [is-builtin]]
         [.model-patterns [FORM whole times]]
         [.utils [mangle pairwise]]
         [.models [*]]
+        [.bootstrap [stdlib]]
+        [pathlib [Path]]
         [pprint [pprint]]
         [funcparserlib.parser [many oneplus maybe NoParseError]]
         [collections [defaultdict]]
         [anytree [Walker Node RenderTree AsciiStyle]])
 
 (setv NEWLINE "\n"
-      INDENT "\t"
       _model-compilers {}
       _special-form-compilers {}
       _operator-lookup {"=" "=="
@@ -65,12 +67,22 @@
 (defclass SQFASTCompiler [object]
   (defn --init--
     [self &optional [pretty False]]
-    (print "in init")
     (setv self.pretty pretty
           self._seperator (if pretty NEWLINE "")
           self.symbol-table (SymbolTable {(SQFSymbol "this") "_this"
-                                          (SQFSymbol "x") "_x"}))
-    (load-macros))
+                                          (SQFSymbol "x") "_x"})
+          self.can_use_stdlib True)
+    (load-macros)
+
+    (when self.can_use_stdlib
+      (setv stdlib-fn-names (lfor path (importlib.resources.contents stdlib)
+                                  :if (in ".sqp" path)
+                                  (-> path Path (. stem))) )
+      (for [fn-name stdlib-fn-names]
+        (self.symbol-table.insert
+          self.symbol-table.global-scope
+          fn-name
+          (self._mangle-global self.symbol-table.global-scope (mangle fn-name))))))
 
   (defn compile-if-not-str
     [self scope value]
@@ -119,7 +131,7 @@
         (cond [(zero? (len args)) sroot]
               [(= (len args) 1) f"({sroot} {(get sargs 0)})"]
               [(= (len args) 2) f"({(get sargs 0)} {sroot} {(get sargs 1)})"]
-              [True f"({(get sargs 0)} {sroot} [(.join \", \" (cut sargs 1))])"])
+              [True f"({(get sargs 0)} {sroot} [{(.join \", \" (cut sargs 1))}])"])
         (do
           (setv binding (self.symbol-table.lookup scope root)
                 sargs (str.join ", " sargs))
@@ -245,7 +257,7 @@
             (self.symbol-table.insert scope -name mname))
 
       (setv sargs (.join ", " (gfor arg args f"\"{arg}\"")))
-      f"params [{sargs}];"))
+      f"params [{sargs}]"))
 
   (with-decorator
     (special "do" [(many FORM)])
@@ -337,7 +349,7 @@
                                        (SQFSymbol "_x")])
           seq (self.compile-if-not-str new-scope seq)
           body (self._compile-implicit-do new-scope (+ [binding-expr] body))
-          buffer ["{" body "}" f"forEach {seq}"])
+          buffer ["{" body "}" f" forEach {seq}"])
     (self._seperator.join buffer))
 
   (with-decorator
