@@ -9,7 +9,8 @@ recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 recursive-include sqisp *.hy
-recursive-include sqisp *.sqp[m]
+recursive-include sqisp *.sqpm
+recursive-include sqisp *.sqp
 
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
