@@ -1,0 +1,5 @@
+(defn-file [pred seq]
+  (setv ret [])
+  (for [x seq]
+    (if (pred x) (pushBack ret x)))
+  ret)

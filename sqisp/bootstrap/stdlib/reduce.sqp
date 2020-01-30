@@ -1,0 +1,5 @@
+(defn-file [f initial seq]
+  (setv accum initial)
+  (for [curr seq]
+    (reset! accum (f accum curr)))
+  accum)
