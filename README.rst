@@ -52,7 +52,7 @@ Its *highly* recommended to install from a virtual environment.
 Features
 ----------
 
-- [ ] macros
+- [x] macros
 - [ ] keywords
 - [x] name mangling
 - [x] private by default
