@@ -111,7 +111,7 @@ def main(input, output, pretty=False, watch=False, no_stdlib=False):
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(text)
 
-            cfgfuncs.append(f'class {mangled_name} {{file = "{out_path}"}}')
+            cfgfuncs.append(f'class {mangled_name} {{file = "stdlib\{out_path.name}"}}')
         description_ext = DESCRIPTION_TEMPLATE.format(
             ("\n" + " " * 24).join(cfgfuncs))
         Path(poutput, "description.ext").write_text(description_ext)
