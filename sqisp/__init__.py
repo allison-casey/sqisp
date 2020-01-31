@@ -4,7 +4,7 @@
 
 __author__ = """Steve Casey"""
 __email__ = 'stevecasey21@gmail.com'
-__version__ = '__version__ = "0.10.1"'
+__version__ = '__version__ = "0.10.2"'
 
 import hy
 
