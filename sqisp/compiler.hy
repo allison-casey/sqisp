@@ -241,7 +241,7 @@
         (self.symbol-table.insert new-scope -name mname))
 
       (setv sargs (.join ", " (gfor arg sargs f"\"{arg}\""))
-            params [(if args f"params [{sargs}]" [])])
+            params [f"params [{sargs}]"])
 
       (self._seperator.join
         ["{"  (self._compile-implicit-do new-scope (+ params body)) "}"])))
