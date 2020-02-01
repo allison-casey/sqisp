@@ -1,2 +1,2 @@
 (defn-file [m]
-  (and (vec? m) (= (count m) 4) (= (first m) "%SQISP_HASH%")))
+  (and (vec? m) (= (count m) 3) (= (first m) "%SQISP_HASH%")))
