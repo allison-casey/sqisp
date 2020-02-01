@@ -1,2 +1,2 @@
 (defn-file [m k]
-  (in k (keys m)))
+  (in k (second m)))
