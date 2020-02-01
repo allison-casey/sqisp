@@ -116,7 +116,8 @@
        (except [e ValueError]))
   (try (return (SQFFloat obj))
        (except [e ValueError]))
-  (if (and (obj.startswith ":") (not-in "." obj))))
+  (if (and (obj.startswith ":") (not-in "." obj))
+      (return (SQFKeyword obj))))
 
 (with-decorator (pg.production "identifier : IDENTIFIER")
   (defn t-identifier
