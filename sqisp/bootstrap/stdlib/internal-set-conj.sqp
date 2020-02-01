@@ -1,6 +1,6 @@
 (defn-file [s k]
   (when (set? s)
-    (setv index (find (second s) key))
+    (setv index (find (second s) k))
     (if (< index 0)
       (pushBack (second s) k))
     s))
