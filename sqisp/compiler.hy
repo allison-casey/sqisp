@@ -389,7 +389,9 @@
             values (cut hash-map 1 None 2)
             pairs (SQFList (lfor (, k v) (zip keys values)
                                  (SQFList [k v]))))
-      f"(hash-map {(self.compile pairs scope)})"))
+      ;; f"(hash-map {(self.compile pairs scope)})"
+      (self.compile (SQFExpression [(SQFSymbol "hash-map") pairs]) scope)
+      ))
 
   (with-decorator
     (builds-model SQFExpression)
