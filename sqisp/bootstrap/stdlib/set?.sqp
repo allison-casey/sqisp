@@ -1,0 +1,2 @@
+(defn-file [s]
+  (and (vec? s) (= (count s) 2) (= (first s) "%SQISP_SET%")))
