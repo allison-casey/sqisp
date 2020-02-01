@@ -1,0 +1,2 @@
+(defn-file [m]
+  (and (list? m) (= (count m) 4) (= (first m) "%SQISP_HASH%")))
