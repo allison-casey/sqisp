@@ -1,4 +1,4 @@
 (defn-file [m k]
-  (setv index (internal-hash-get m k))
+  (setv index (find (keys m) k))
   (deleteAt (keys m) index)
   (deleteAt (vals m) index))
