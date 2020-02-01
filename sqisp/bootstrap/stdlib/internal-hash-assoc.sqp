@@ -1,6 +1,6 @@
 (defn-file [map key val]
   (when (map? map)
-    (setv index (internal-hash-get map key))
+    (setv index (find (keys m) k))
     (if (>= 0 index)
       (set (vals map) [index val])
       (do (pushBack (keys map) key)
