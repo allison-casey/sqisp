@@ -1,0 +1,6 @@
+(defn-file
+  [m]
+  (setv keys (map first m))
+  (setv values (map second m))
+
+  ["#SQISP_HASH#" keys values])

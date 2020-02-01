@@ -1,5 +1,6 @@
 (import copy
         importlib.resources
+        logging
         [.macros [load-macros sqisp-macroexpand __sqisp_macros__]]
         [.types [is-builtin]]
         [.model-patterns [FORM whole times]]
@@ -379,6 +380,16 @@
     (defn compile-integer
       [self scope val]
       (str val)))
+
+  (with-decorator
+    (builds-model SQFDict)
+    (defn compile-dict
+      [self scope hash-map]
+      (setv keys (cut hash-map None None 2)
+            values (cut hash-map 1 None 2)
+            pairs (SQFList (lfor (, k v) (zip keys values)
+                                 (SQFList [k v]))))
+      f"(hash-map {(self.compile pairs scope)})"))
 
   (with-decorator
     (builds-model SQFExpression)

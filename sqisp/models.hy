@@ -6,6 +6,7 @@
              (. self --class-- --name--)
              (.--repr--(super SQFObject self)))))
 
+
 (defclass SQFString [SQFObject str]
   "SQFString"
   []
@@ -31,6 +32,7 @@
   (defn --repr-- [self]
     (str self)))
 
+(defclass SQFDict [SQFSequence])
 (defclass SQFExpression [SQFObject tuple])
 (defclass SQFList [SQFObject tuple])
 (defclass SQFInteger [SQFObject int])

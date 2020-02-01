@@ -1,6 +1,7 @@
 (import [.lexer [lexer]]
         [.models [SQFExpression
                   SQFList
+                  SQFDict
                   SQFObject
                   SQFSequence
                   SQFString
@@ -65,6 +66,7 @@
   (pg.production "term : identifier")
   (pg.production "term : paren")
   (pg.production "term : list")
+  (pg.production "term : dict")
   (pg.production "term : string")
   (defn term
     [state p]
@@ -79,6 +81,16 @@
   (defn t-empty-list
     [state p]
     (SQFList [])))
+
+(with-decorator (pg.production "dict : LCURLY list_contents RCURLY")
+  (defn t-dict
+    [state p]
+    (SQFDict (get p 1))))
+
+(with-decorator (pg.production "dict : LCURLY RCURLY")
+  (defn t-empty-dict
+    [state p]
+    (SQFDict [])))
 
 (with-decorator (pg.production "string : STRING")
   (defn t-string
