@@ -1,4 +1,5 @@
 (defn-file
+  "Returns a new hash map with the supplied key value pairs."
   [m]
   (setv keys (map first m))
   (setv values (map second m))
