@@ -1,0 +1,4 @@
+(defn-file [m k]
+  (setv index (find (second m) k))
+  (if (>= index 0)
+    (select (second m) index)))
