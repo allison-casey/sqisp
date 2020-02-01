@@ -357,6 +357,7 @@
 
   (with-decorator
     (builds-model SQFString)
+    (builds-model SQFKeyword)
     (defn compile-string
       [self scope s]
       f"\"{s}\""))

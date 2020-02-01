@@ -2,6 +2,7 @@
         [.models [SQFExpression
                   SQFList
                   SQFDict
+                  SQFKeyword
                   SQFObject
                   SQFSequence
                   SQFString
@@ -114,7 +115,8 @@
   (try (return (SQFInteger obj))
        (except [e ValueError]))
   (try (return (SQFFloat obj))
-       (except [e ValueError])))
+       (except [e ValueError]))
+  (if (and (obj.startswith ":") (not-in "." obj))))
 
 (with-decorator (pg.production "identifier : IDENTIFIER")
   (defn t-identifier
