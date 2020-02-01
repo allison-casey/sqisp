@@ -20,11 +20,9 @@
     file-paths (lfor func-name funcs
                      :setv path (Path (+ func-name ".sqf"))
                      f"class {func-name} {{file = \"stdlib\\{path}\"}}"))
-  (.join "\n" ["class CfgFunctions {"
-               "\tclass sqisp {"
-               "\t\tclass stdlib {"
-               #* (map (fn [x] (+ "\t\t\t" x)) file-paths)
-               "\t\t};"
+  (.join "\n" ["class sqisp {"
+               "\tclass stdlib {"
+               #* (map (fn [x] (+ "\t\t" x)) file-paths)
                "\t};"
                "};"]))
 
@@ -40,7 +38,7 @@
           out-path (Path output-dir "stdlib" (+ fn-name ".sqf")))
     (out-path.parent.mkdir :parents True :exist-ok True)
     (out-path.write-text text))
-  (.write-text (Path output-dir "CfgFunctions.hpp")
+  (.write-text (Path output-dir "SqispStdlib.hpp")
                (create-cfg-functions funcs)))
 
 (defn compile-file
