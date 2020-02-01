@@ -102,7 +102,6 @@
 
   (defn compile
     [self tree scope]
-    (print tree)
     (if (none? tree) (return None))
     (self.compile-atom tree scope))
 
