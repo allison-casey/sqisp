@@ -82,10 +82,11 @@
       (for [fn-name stdlib-fn-names]
         (self.symbol-table.insert
           self.symbol-table.global-scope
-          fn-name
+          (SQFString fn-name)
           (self._mangle-global
             self.symbol-table.global-scope
-            (mangle-cfgfunc fn-name))))))
+            (mangle-cfgfunc fn-name))))
+      ))
 
   (defn compile-if-not-str
     [self scope value]
@@ -97,7 +98,7 @@
 
   (defn compile-root
     [self root]
-    (setv scope self.symbol-table.global-scope)
+    (setv scope (self.symbol-table.scope-from self.symbol-table.global-scope))
     (self.compile root scope))
 
   (defn compile
@@ -391,6 +392,12 @@
             pairs (SQFList (lfor (, k v) (zip keys values)
                                  (SQFList [k v]))))
       (self.compile (SQFExpression [(SQFSymbol "hash-map") pairs]) scope)))
+
+  (with-decorator
+    (builds-model SQFSet)
+    (defn compile-set
+      [self scope hash-set]
+      (self.compile (SQFExpression [(SQFSymbol "hash-set") (SQFList hash-set)]) scope)))
 
   (with-decorator
     (builds-model SQFExpression)

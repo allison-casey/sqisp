@@ -2,6 +2,7 @@
         [.models [SQFExpression
                   SQFList
                   SQFDict
+                  SQFSet
                   SQFKeyword
                   SQFObject
                   SQFSequence
@@ -92,6 +93,16 @@
   (defn t-empty-dict
     [state p]
     (SQFDict [])))
+
+(with-decorator (pg.production "dict : HLCURLY list_contents RCURLY")
+  (defn t-set
+    [state p]
+    (SQFSet (get p 1))))
+
+(with-decorator (pg.production "dict : HLCURLY RCURLY")
+  (defn t-empty-set
+    [state p]
+    (SQFSet [])))
 
 (with-decorator (pg.production "string : STRING")
   (defn t-string

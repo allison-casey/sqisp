@@ -10,6 +10,7 @@
 (lg.add "RBRACKET" r"\]")
 (lg.add "LCURLY" r"\{")
 (lg.add "RCURLY" r"\}")
+(lg.add "HLCURLY" r"#\{")
 (lg.add "QUOTE" (.format r"\'{}" end_quote))
 (lg.add "QUASIQUOTE" (.format r"\`{}" end_quote))
 (lg.add "UNQUOTESPLICE" (.format r"\~@{}" end_quote))
