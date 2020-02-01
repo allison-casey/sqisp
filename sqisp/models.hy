@@ -33,6 +33,7 @@
     (str self)))
 
 (defclass SQFDict [SQFSequence])
+(defclass SQFSet [SQFSequence])
 (defclass SQFKeyword [SQFObject str])
 (defclass SQFExpression [SQFObject tuple])
 (defclass SQFList [SQFObject tuple])

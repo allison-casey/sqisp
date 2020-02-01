@@ -1,0 +1,2 @@
+(defn-file [seq]
+  ["%SQISP_SET%" (map identity seq)])
