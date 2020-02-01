@@ -1,17 +1,27 @@
 (defmacro defn
-  [name &rest args]
+  [name doc-string? &rest args]
   (if-not (= (type name) SQFSymbol)
           (raise (SyntaxError "defn takes a name as a first argument")))
+  (if-not (string? doc-string?)
+          (setv args (+ [doc-string?] args)))
   `(setv ~name (fn ~@args)))
 
 (defmacro defglobal
-  [name &rest args]
+  [name doc-string? &rest args]
   (if-not (= (type name) SQFSymbol)
           (raise (SyntaxError "defn takes a name as a first argument")))
+
+  (if-not (string? doc-string?)
+          (setv args (+ [doc-string?] args)))
   `(setg ~name (fn ~@args)))
 
 (defmacro defn-file
-  [args &rest body]
+  [doc-string? args &rest body]
+  (when (not (string? doc-string?))
+    (setv body (list body))
+    (.insert body 0 args)
+    (setv args doc-string?))
+
   (if-not (= (type args) SQFList)
           (raise (SyntaxError "defn-file takes a list as its first argument")))
 
