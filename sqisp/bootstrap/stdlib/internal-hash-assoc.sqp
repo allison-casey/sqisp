@@ -1,6 +1,6 @@
 (defn-file [m key val]
   (when (map? m)
-    (setv index (find (keys m) k))
+    (setv index (find (keys m) key))
     (if (>= 0 index)
       (set (vals m) [index val])
       (do (pushBack (keys m) key)
