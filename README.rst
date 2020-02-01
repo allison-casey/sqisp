@@ -52,7 +52,7 @@ Its *highly* recommended to install from a virtual environment.
 Features
 ----------
 
-- [ ] macros
+- [x] macros
 - [ ] keywords
 - [x] name mangling
 - [x] private by default
@@ -70,7 +70,7 @@ Expressions
 - [x] while
 - [x] fn
 - [x] foreach
-- [ ] case      [NOTE]: Will be implemented with macros
+- [x] case      :Implemented with cond
 - [ ] exitwith  [NOTE]: May be unnecessary
 - [ ] waituntil [NOTE]: May be unnecessary
 - [ ] default   [NOTE]: May be unnecessary
