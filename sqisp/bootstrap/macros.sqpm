@@ -3,7 +3,7 @@
   (if-not (= (type name) SQFSymbol)
           (raise (SyntaxError "defn takes a name as a first argument")))
   (if-not (string? doc-string?)
-          (setv args (+ [doc-string?] args)))
+          (setv args (+ [doc-string?] (list args))))
   `(setv ~name (fn ~@args)))
 
 (defmacro defglobal
@@ -12,7 +12,7 @@
           (raise (SyntaxError "defn takes a name as a first argument")))
 
   (if-not (string? doc-string?)
-          (setv args (+ [doc-string?] args)))
+          (setv args (+ [doc-string?] (list args))))
   `(setg ~name (fn ~@args)))
 
 (defmacro defn-file
