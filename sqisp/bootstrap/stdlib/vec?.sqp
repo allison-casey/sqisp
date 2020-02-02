@@ -1,1 +1,3 @@
-(defn-file [x] (= (typeName x) "ARRAY"))
+(defn-file [x] (and (= (typeName x) "ARRAY")
+                    (not (map? x))
+                    (not (set? x))))
