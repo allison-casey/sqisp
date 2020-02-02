@@ -1,1 +1,2 @@
-(defn-file [m] (map identity (third m)))
+(defn-file [m]
+  (map identity (select m 2)))
