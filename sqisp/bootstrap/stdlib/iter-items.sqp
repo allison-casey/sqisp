@@ -1,5 +1,5 @@
-(defn-file [m]
+(defn-file [coll]
   (cond
-    (map? m) (zip (keys m) (vals m))
-    (set? m) (map identity (select s 1))
-    (vec? m) m))
+    (map? coll) (zip (keys coll) (vals coll))
+    (set? coll) (map identity (select coll 1))
+    (vec? coll) coll))
