@@ -1,0 +1,13 @@
+(defn-file [obj]
+  (cond
+    (set? obj) (format ["#{%1}" (joinString (map sqisp-repr (iter-items obj)) ", ")])
+    (map? obj) (format ["{%1}"
+                        (joinString
+                         (map (fn [x]
+                                (joinString [(sqisp-repr (first x))
+                                             (sqisp-repr (second x))]
+                                            " "))
+                              (iter-items obj)) ", ")])
+    (vec? obj) (format ["[%1]" (joinString (map sqisp-repr obj) ", ")])
+    (string? obj) obj
+    true (str obj)))
