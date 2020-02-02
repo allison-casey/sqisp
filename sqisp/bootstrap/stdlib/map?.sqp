@@ -1,2 +1,2 @@
 (defn-file [m]
-  (and (vec? m) (= (count m) 3) (= (select m 0) "%SQISP_HASH%")))
+  (and (vec? m) (= (count m) 3) (= (select m 0) "#SQISP_HASH#")))
