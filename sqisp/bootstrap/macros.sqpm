@@ -35,11 +35,6 @@
                       `(~node ~ret))))
     ret)
 
-(defmacro as-> [head name &rest args]
-    `(do (setv ~name ~head)
-         ~@(lfor arg args `(setv ~name ~arg))
-         ~name))
-
 (defmacro if-not [test not-branch &optional yes-branch]
     `(if (not ~test) ~not-branch ~yes-branch))
 
