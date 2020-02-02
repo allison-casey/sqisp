@@ -1,0 +1,4 @@
+(defn-file [coll k]
+  (cond
+    (map? coll) (internal-hash-dissoc coll k)
+    (vec? coll) (do (deleteAt coll k) coll)))

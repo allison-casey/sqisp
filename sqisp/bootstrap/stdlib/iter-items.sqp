@@ -1,0 +1,2 @@
+(defn-file [m]
+  (zip (keys m) (vals m)))
