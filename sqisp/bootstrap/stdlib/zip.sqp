@@ -1,5 +1,5 @@
 (defn-file [x y]
   (setv ret [])
   (for [i 0 (dec (min (count x) (count y)))]
-    (pushBack [(select x i) (select y i)]))
+    (pushBack ret [(select x i) (select y i)]))
   ret)
