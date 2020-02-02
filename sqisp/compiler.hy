@@ -164,7 +164,7 @@
             args (lfor arg args (self.compile-if-not-str scope arg)))
 
       (cond [(zero? (len args)) "true"]
-            [(= (len args 1)) (get args 0)]
+            [(= (len args) 1) (get args 0)]
             [True (.join f" {sroot} " args)])))
 
   (with-decorator
