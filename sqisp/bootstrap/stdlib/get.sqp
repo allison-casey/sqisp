@@ -1,0 +1,4 @@
+(defn-file [coll k]
+  (cond
+    (map? coll) (internal-hash-get coll k)
+    (vec? coll) (select coll k)))
