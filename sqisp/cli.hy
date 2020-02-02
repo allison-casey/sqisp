@@ -9,6 +9,7 @@
   [sqisp [compile]]
   [.formatter [format]]
   [.compiler [SQFASTCompiler]]
+  [.macros [compile-macro-file]]
   [.bootstrap [stdlib]]
   [.utils [mangle_cfgfunc]]
   [watchdog.observers [Observer]]
@@ -55,12 +56,21 @@
             (fout.write text)))
       (print text)))
 
+(defn compile-macros
+  [input-dir]
+  (for [file (.rglob input-dir "*.sqpm")]
+    (compile-macro-file (file.read-text))))
+
 (defn compile-directory
   [output-dir input-dir compiler]
   (if output-dir.suffix
       (raise (ValueError (+ "Input and Output paths must both be directories "
                             "when compiling a directory"))))
 
+  ;; compile macros
+  (compile-macros input-dir)
+
+  ;; compile sqisp files
   (for [file (.rglob input-dir "*.sqp")]
     (compile-file output-dir file compiler)))
 
