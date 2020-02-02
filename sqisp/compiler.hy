@@ -226,9 +226,9 @@
     (special "setg" [FORM FORM])
     (defn compile-defglobal-expression
       [self scope expr root -name value]
-      (setv value (self.compile-if-not-str scope value)
-            gname (self._mangle-global scope -name))
+      (setv gname (self._mangle-global scope -name))
       (self.symbol-table.insert scope -name gname)
+      (setv value (self.compile-if-not-str scope value))
       f"{gname} = {value}"))
 
   (with-decorator
