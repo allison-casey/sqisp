@@ -165,7 +165,9 @@
 
       (cond [(zero? (len args)) "true"]
             [(= (len args) 1) (get args 0)]
-            [True (.join f" {sroot} " args)])))
+            [True (+ f"{(get args 0)} {sroot} "
+                     (.join f" {sroot} " (gfor arg (cut args 1)
+                                               f"{{{arg}}}")))])))
 
   (with-decorator
     (special  ["import"] [(many FORM)])
