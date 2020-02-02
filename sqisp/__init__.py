@@ -18,7 +18,7 @@ from .compiler import SQFASTCompiler
 def compile(text, pretty=False, compiler=None):
     load_types("types")
 
-    tokens = parser.parse(lexer.lex(text.replace(",", "")),
+    tokens = parser.parse(lexer.lex(text),
                           state=ParserState())
     ast = SQFExpression([SQFSymbol("do")] + tokens)
 
