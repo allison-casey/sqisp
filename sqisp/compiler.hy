@@ -1,7 +1,7 @@
 (import copy
         importlib.resources
         logging
-        [.macros [load-macros sqisp-macroexpand __sqisp_macros__]]
+        [.macros [hy->sqf load-macros sqisp-macroexpand __sqisp_macros__]]
         [.types [is-builtin]]
         [.model-patterns [FORM whole times]]
         [.utils [mangle-cfgfunc mangle pairwise]]
@@ -272,6 +272,29 @@
       (.join
         f"; {self._seperator}"
         (gfor expression body (self.compile-if-not-str scope expression)))))
+
+  (with-decorator
+    (special "try" [(many FORM)])
+    (defn compile-try-expression
+      [self scope expr root body]
+      (setv try-scope (self.symbol-table.scope-from scope)
+            catch-scope (self.symbol-table.scope-from scope)
+            last-expr (get body -1))
+      (if-not (= (get last-expr 0) (SQFSymbol "catch"))
+              (raise
+                (TypeError "Try must have a catch block as the last expression.")))
+
+      (setv (, catch-root exception-binding #* catch-body) last-expr)
+      (self._seperator.join
+        ["try {"
+         (self.compile (hy->sqf `(do ~@(butlast body))) try-scope)
+         "}"
+         "catch {"
+         (self.compile
+           (hy->sqf `(do (setv ~exception-binding _exception)
+                         ~@catch-body))
+           catch-scope)
+         "}"])))
 
   (with-decorator
     (special "if" [FORM FORM (maybe FORM)])
