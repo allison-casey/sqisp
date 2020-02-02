@@ -16,7 +16,7 @@
 (setv NEWLINE "\n"
       _model-compilers {}
       _special-form-compilers {}
-      _operator-lookup {"=" "=="
+      _operator-lookup {"=" "isEqualTo"
                         "!=" "!="
                         "and" "&&"
                         "or" "||"
