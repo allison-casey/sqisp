@@ -353,7 +353,9 @@
     (setv binding-expr (SQFExpression [(SQFSymbol "setv")
                                        (SQFSymbol binding)
                                        (SQFSymbol "_x")])
-          seq (self.compile-if-not-str new-scope seq)
+          seq (self.compile-if-not-str
+                new-scope
+                (SQFExpression [(SQFSymbol "iter-items") seq]))
           body (self._compile-implicit-do new-scope (+ [binding-expr] body))
           buffer ["{" body "}" f" forEach {seq}"])
     (self._seperator.join buffer))
