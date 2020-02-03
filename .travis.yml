@@ -11,5 +11,5 @@ deploy:
     secure: gVVNWRoAotKk9ec1Lx7IC0uC7G9KnSB3iYhHM2TtqoEMCgMBRWrhiAs9XhftM56EKxTj3Nt74Pn4vWyMkd0X3msynwXwNi3hVDZ4jIA9iXqU6cdVXeZURch52dABxHiUC4Q6dpO7Vpi627Ghn0BzqFJXrELdVDhw+UbTY9xkuJ0LIKqQOrFZ8u611aa//kt9wdrTbqm852TJAdf+nP5ohB8+kxC+H1Dqt9IY8koPmvX25SHG+7rnFU7PVyonQoMkiWLf4qjYq5/IuqjslmoykaOde4sejCHhK/7AvLY8H62He7tkBArVzpYoNpEsgm4pVNvdO6+2HADBIRAUPOCY71mXYBWIvsfvUKSElvV9Q0i3bhPD4t+Jd0Fbi3FnGiPQ6PMA97Rfws9p/kqas5wSu/r14cZ052vzZrfxnNA7XkZ3rul8OdFd6vTFOElyVcLYIPy/CN2Tw+KkdE/sb/JplLkMjOXiiXPzUwKGKQcKAl9K/H3yy+0dsvJC7vwrcbmonOf7bb7+bNGw5lRs9cX+U/nFt3TnOezdQSDu91v3FhYufsdQ2DMCxPaOFWOt5x7GvUW8xqQC64FvitOW7l+5hnujBT7J9RuT/QBbYAzYmvfp0rR/CQu5M9uez+tSutdQKnaQNzty7khHG5BQsxbtPtZ6fU7nmKqcLGk86kesnMU=
   on:
     tags: true
-    repo: sjcasey21/arma-lisp
+    repo: sjcasey21/sqisp
     python: 3.7
