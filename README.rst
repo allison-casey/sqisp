@@ -1,4 +1,4 @@
-===========
+bb===========
 Sqisp
 ===========
 
@@ -15,27 +15,29 @@ Sqisp
 
 
 
-Status Quo Lisp or Sqisp is a lisp dialect that compiles to sqf. Its main goal is to unify sqf's 
-somewhat arbitrary and muddled syntax and enhance it with lisp's consistency and compile time macro capability.
+Status Quo Lisp or Sqisp is a lisp dialect that compiles to sqf. Its main goal
+is to unify sqf's somewhat arbitrary and muddled syntax and enhance it with
+lisp's consistency and compile time macro capability.
 
-**NOTE**: Sqisp is in Beta and subject to change. A stable api will be released at v1.0.
+**NOTE**: Sqisp is in Beta and subject to change. A stable api will be released
+at v1.0.
 
 
 
 Installation
 ------------
-For most users it is recommended to to install sqisp from pypi with 
+For most users it is recommended to to install sqisp from pypi with
 
 .. code-block:: bash
 
    pip install sqisp
 
 or from github with
-   
+
 .. code-block:: bash
-    
+
     pip install git+https://github.com/sjcasey21/sqisp.git
- 
+
 To stay up to date with development its recommended to install sqisp from its source.
 Its *highly* recommended to install from a virtual environment.
 
@@ -44,7 +46,7 @@ Its *highly* recommended to install from a virtual environment.
     git clone https://github.com/sjcasey21/sqisp.git
     cd ./sqisp
     python setup.py install --user
-    
+
 
 
 
@@ -219,9 +221,9 @@ Output SQF
   {
       private _x = _x;
   ( hint _x ) } forEach [1, 2, 3, 4]
-  
-  
-  
+
+
+
 
 
 * Free software: MIT license
