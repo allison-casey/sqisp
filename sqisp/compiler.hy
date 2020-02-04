@@ -14,7 +14,7 @@
         [anytree [Walker Node RenderTree AsciiStyle]])
 
 (setv NEWLINE "\n"
-      _model-compilers {}
+      _model-compilers {str (fn [compiler scope s] s)}
       _special-form-compilers {}
       _operator-lookup {"=" "isEqualTo"
                         "!=" "!="
@@ -85,24 +85,22 @@
           (SQFString fn-name)
           (self._mangle-global
             self.symbol-table.global-scope
-            (mangle-cfgfunc fn-name))))
-      ))
-
-  (defn compile-if-not-str
-    [self scope value]
-    (if (is (type value) str) value (self.compile value scope)))
+            (mangle-cfgfunc fn-name))))))
 
   (defn compile-atom
     [self atom scope]
     ((get _model-compilers (type atom)) self scope atom))
 
-  (defn compile-root
-    [self root]
-    (setv scope (self.symbol-table.scope-from self.symbol-table.global-scope))
-    (self.compile root scope))
+  ;; (defn compile-root
+  ;;   [self root]
+  ;;   (setv scope (self.symbol-table.scope-from self.symbol-table.global-scope))
+  ;;   (self.compile scope root))
 
   (defn compile
-    [self tree scope]
+    [self tree &optional scope]
+    (if-not scope
+            (setv scope
+                  (self.symbol-table.scope-from self.symbol-table.global-scope)))
     (if (none? tree) (return None))
     (self.compile-atom tree scope))
 
@@ -115,20 +113,18 @@
 
   (defn _mangle-global
     [self scope -name]
-    (-> scope
-        (self.compile-if-not-str -name)
-        (.lstrip "_")))
+    (.lstrip (self.compile -name scope) "_"))
 
   (defn _mangle-private
     [self scope -name]
     (as-> scope $
-        (self.compile-if-not-str $ -name)
+        (self.compile -name $)
         (if (.startswith $ "_") $ (+ "_" $))))
 
   (defn compile-function-call
     [self scope root args]
-    (setv sroot (self.compile-if-not-str scope root)
-          sargs (lfor arg args (self.compile-if-not-str scope arg)))
+    (setv sroot (self.compile root scope )
+          sargs (lfor arg args (self.compile arg scope)))
 
 
     (if (builtin? sroot)
@@ -153,7 +149,7 @@
     (defn compile-math-expression
       [self scope expr root args]
       (setv sroot (str root)
-            sargs (lfor arg args (self.compile-if-not-str scope arg))
+            sargs (lfor arg args (self.compile arg scope ))
             buff (.join f" {sroot} " sargs))
       f"({buff})"))
 
@@ -161,9 +157,9 @@
     (special ["and" "or"] [(many FORM)])
     (defn compile-and-or-expression
       [self scope expr root args]
-      (setv sroot (self.compile-if-not-str scope root)
+      (setv sroot (self.compile root scope )
             sroot (get _operator-lookup sroot)
-            args (lfor arg args (self.compile-if-not-str scope arg)))
+            args (lfor arg args (self.compile arg scope)))
 
       (cond [(zero? (len args)) "true"]
             [(= (len args) 1) (get args 0)]
@@ -192,16 +188,16 @@
     (special ["%"] [(times 2 2 FORM)])
     (defn compile-math-expression
       [self scope expr root args]
-      (setv sroot (get _operator-lookup (self.compile-if-not-str scope root))
-            sargs (lfor arg args (self.compile-if-not-str scope arg)))
+      (setv sroot (get _operator-lookup (self.compile root scope))
+            sargs (lfor arg args (self.compile arg scope)))
 
       (if (= (len sargs) 1)
           "true"
           (do
             (setv buff [])
             (for [(, left right) (pairwise sargs)]
-              (setv left (self.compile-if-not-str scope left)
-                    right (self.compile-if-not-str scope right))
+              (setv left (self.compile left scope )
+                    right (self.compile right scope))
               (buff.append f"({left} {sroot} {right})"))
             (str.join " && " buff)))))
   (with-decorator
@@ -209,7 +205,7 @@
     (defn compile-reset-expression
       [self scope expr root -name value]
       (setv pname (self._mangle-private scope -name)
-            value (self.compile-if-not-str scope value)
+            value (self.compile value scope)
             defined-in-scope (bool (self.symbol-table.lookup scope -name)))
       (if defined-in-scope
           f"{pname} = {value}"
@@ -220,7 +216,7 @@
     (defn compile-setv-expression
       [self scope expr root -name value]
       (setv pname (self._mangle-private scope -name)
-            value (self.compile-if-not-str scope value))
+            value (self.compile value scope))
       (self.symbol-table.insert scope -name pname)
       f"private {pname} = {value}"))
 
@@ -230,7 +226,7 @@
       [self scope expr root -name value]
       (setv gname (self._mangle-global scope -name))
       (self.symbol-table.insert scope -name gname)
-      (setv value (self.compile-if-not-str scope value))
+      (setv value (self.compile value scope))
       f"{gname} = {value}"))
 
   (with-decorator
@@ -273,7 +269,7 @@
       [self scope expr root body]
       (.join
         f"; {self._seperator}"
-        (gfor expression body (self.compile-if-not-str scope expression)))))
+        (gfor expression body (self.compile expression scope)))))
 
   (with-decorator
     (special "try" [(many FORM)])
@@ -303,11 +299,11 @@
     (special "if*" [FORM FORM (maybe FORM)])
     (defn compile-if-expression
       [self scope expr root pred body else_expr]
-      (setv pred (self.compile-if-not-str scope pred)
+      (setv pred (self.compile pred scope)
             if-scope (self.symbol-table.scope-from scope)
             else-scope (self.symbol-table.scope-from scope)
-            body (self.compile-if-not-str if-scope body)
-            else-expr (if else-expr (self.compile-if-not-str else-scope else-expr))
+            body (self.compile body if-scope)
+            else-expr (if else-expr (self.compile else-expr else-scope))
             end (if else-expr "" ";")
             buff [f"if ({pred}) then" "{" f"{body}" f"}}{end}"])
       (if else-expr
@@ -328,7 +324,7 @@
           (raise (SyntaxError f"for takes 3 to 4 arguments {(len cond)} given.")))
 
       (setv new-scope (self.symbol-table.scope-from scope)
-            pred (lfor val pred (self.compile-if-not-str scope val))
+            pred (lfor val pred (self.compile val scope))
             iterator (self._mangle-private new-scope (get pred 0)))
 
       (self.symbol-table.insert new-scope (get pred 0) iterator)
@@ -351,7 +347,7 @@
       (if-not (isinstance pred SQFExpression)
               (raise (SyntaxError "while condition must be an expression")))
 
-      (setv pred (self.compile-if-not-str scope pred)
+      (setv pred (self.compile pred scope )
             new-scope (self.symbol-table.scope-from scope)
             body (self._compile-implicit-do new-scope body)
             buffer [f"while {{{pred}}} do"
@@ -373,14 +369,14 @@
 
     (setv new-scope (self.symbol-table.scope-from scope)
           (, binding seq) initializer
-          binding (self.compile-if-not-str scope binding))
+          binding (self.compile binding scope))
     (self.symbol-table.insert new-scope (get initializer 0) binding)
     (setv binding-expr (SQFExpression [(SQFSymbol "setv")
                                        (SQFSymbol binding)
                                        (SQFSymbol "_x")])
-          seq (self.compile-if-not-str
-                new-scope
-                (SQFExpression [(SQFSymbol "iter-items") seq]))
+          seq (self.compile
+                (SQFExpression [(SQFSymbol "iter-items") seq])
+                new-scope)
           body (self._compile-implicit-do new-scope (+ [binding-expr] body))
           buffer ["{" body "}" f" forEach {seq}"])
     (self._seperator.join buffer))
