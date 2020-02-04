@@ -1,1 +1,1 @@
-(defn-file [x] (= (typeName x) "SCALAR"))
+(defn-file [x] (= (bis/type-name x) "SCALAR"))

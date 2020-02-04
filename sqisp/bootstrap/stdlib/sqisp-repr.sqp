@@ -1,13 +1,13 @@
 (defn-file [obj]
   (cond
-    (set? obj) (format ["#{%1}" (joinString (map sqisp-repr obj) ", ")])
-    (map? obj) (format ["{%1}"
-                        (joinString
+    (set? obj) (bis/format ["#{%1}" (bis/join-string (map sqisp-repr obj) ", ")])
+    (map? obj) (bis/format ["{%1}"
+                        (bis/join-string
                          (map (fn [x]
-                                (joinString [(sqisp-repr (first x))
+                                (bis/join-string [(sqisp-repr (first x))
                                              (sqisp-repr (second x))]
                                             " "))
                               obj) ", ")])
-    (vec? obj) (format ["[%1]" (joinString (map sqisp-repr obj) ", ")])
+    (vec? obj) (bis/format ["[%1]" (bis/join-string (map sqisp-repr obj) ", ")])
     (string? obj) obj
-    true (str obj)))
+    true (bis/str obj)))

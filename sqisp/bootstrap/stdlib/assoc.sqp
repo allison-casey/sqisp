@@ -1,4 +1,4 @@
 (defn-file [coll k v]
   (cond
     (map? coll) (internal-hash-assoc coll k v)
-    (vec? coll) (do (set coll [k v]) coll)))
+    (vec? coll) (do (bis/set coll [k v]) coll)))

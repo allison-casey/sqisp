@@ -1,5 +1,5 @@
 (defn-file [seq n]
   (setv ret [])
-  (for [i n (count seq)]
-    (pushBack ret (select seq i)))
+  (for [i n (bis/count seq)]
+    (bis/push-back ret (bis/select seq i)))
   ret)

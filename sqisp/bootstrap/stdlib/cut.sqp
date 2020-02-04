@@ -1,5 +1,5 @@
 (defn-file [seq ?start ?end]
   (cond
-    (and (number? ?start) (number? ?end)) (select seq ?start (max (- ?end ?start) 0))
+    (and (number? ?start) (number? ?end)) (bis/select seq ?start (bis/max (- ?end ?start) 0))
     (number? ?start) (dropn seq ?start)
     true seq))

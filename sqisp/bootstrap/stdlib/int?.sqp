@@ -1,1 +1,1 @@
-(defn-file [x] (= (floor x) x))
+(defn-file [x] (= (bis/floor x) x))

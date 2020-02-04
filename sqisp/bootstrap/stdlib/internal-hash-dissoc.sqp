@@ -1,5 +1,5 @@
 (defn-file [m k]
-  (setv index (find (keys m) k))
-  (deleteAt (second m) index)
-  (deleteAt (third m) index)
+  (setv index (bis/find (keys m) k))
+  (bis/delete-at (second m) index)
+  (bis/delete-at (third m) index)
   m)

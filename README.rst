@@ -119,9 +119,9 @@ Input Arma Lisp
       (if true "Hello" "World"))
 
   (def my_func (fn [a b c]
-                  (hint a)
-                  (hint b)
-                  (hint c)))
+                  (bis/hint a)
+                  (bis/hint b)
+                  (bis/hint c)))
   (def my_val ( my_func "hello" "world" 24.3 ))
 
   ;; Define Lambda Expression

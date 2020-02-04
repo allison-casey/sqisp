@@ -2,7 +2,7 @@
         importlib.resources
         logging
         [.macros [hy->sqf load-macros sqisp-macroexpand __sqisp_macros__]]
-        [.types [is-builtin]]
+        [.types [builtin? get-base-fn-name]]
         [.model-patterns [FORM whole times]]
         [.utils [mangle-cfgfunc mangle pairwise]]
         [.models [*]]
@@ -131,11 +131,13 @@
           sargs (lfor arg args (self.compile-if-not-str scope arg)))
 
 
-    (if (is-builtin sroot)
-        (cond [(zero? (len args)) sroot]
-              [(= (len args) 1) f"({sroot} {(get sargs 0)})"]
-              [(= (len args) 2) f"({(get sargs 0)} {sroot} {(get sargs 1)})"]
-              [True f"({(get sargs 0)} {sroot} [{(.join \", \" (cut sargs 1))}])"])
+    (if (builtin? sroot)
+        (do
+          (setv sroot (get-base-fn-name sroot))
+          (cond [(zero? (len args)) sroot]
+               [(= (len args) 1) f"({sroot} {(get sargs 0)})"]
+               [(= (len args) 2) f"({(get sargs 0)} {sroot} {(get sargs 1)})"]
+               [True f"({(get sargs 0)} {sroot} [{(.join \", \" (cut sargs 1))}])"]))
         (do
           (setv binding (self.symbol-table.lookup scope root)
                 sargs (str.join ", " sargs))

@@ -1,5 +1,5 @@
 (defn-file [m k]
   (when (map? m)
-    (setv index (find (keys m) k))
+    (setv index (bis/find (keys m) k))
     (if (>= index 0)
-      (select (vals m) index))))
+      (bis/select (vals m) index))))

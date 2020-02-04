@@ -1,2 +1,2 @@
 (defn-file [m k]
-  (in k (second m)))
+  (bis/in k (second m)))

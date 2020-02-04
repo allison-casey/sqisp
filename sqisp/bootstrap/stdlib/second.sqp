@@ -1,6 +1,6 @@
 (defn-file [seq]
   (cond
-    (set? seq) (select (select seq 1) 1)
-    (map? seq) [(select (select seq 1) 1)
-                (select (select seq 2) 1)]
-    (vec? seq) (select seq 1)))
+    (set? seq) (bis/select (bis/select seq 1) 1)
+    (map? seq) [(bis/select (bis/select seq 1) 1)
+                (bis/select (bis/select seq 2) 1)]
+    (vec? seq) (bis/select seq 1)))

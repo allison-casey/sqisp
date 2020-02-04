@@ -1,1 +1,1 @@
-(defn-file [n] (floor (random n)))
+(defn-file [n] (bis/floor (bis/random n)))

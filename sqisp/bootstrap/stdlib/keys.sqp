@@ -1,2 +1,2 @@
 (defn-file [m]
-  (map identity (select m 1)))
+  (map identity (bis/select m 1)))

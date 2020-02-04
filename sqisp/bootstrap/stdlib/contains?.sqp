@@ -2,4 +2,4 @@
   (cond
     (set? coll) (internal-set-contains coll k)
     (map? coll) (internal-set-contains coll k)
-    true (<= 0 k (dec (count coll)))))
+    true (<= 0 k (dec (bis/count coll)))))

@@ -1,8 +1,8 @@
 (defn-file [m key val]
   (when (map? m)
-    (setv index (find (second m) key))
+    (setv index (bis/find (second m) key))
     (if (>= index 0)
-      (set (third m) [index val])
-      (do (pushBack (second m) key)
-          (pushBack (third m) val)))
+      (bis/set (third m) [index val])
+      (do (bis/push-back (second m) key)
+          (bis/push-back (third m) val)))
     m))

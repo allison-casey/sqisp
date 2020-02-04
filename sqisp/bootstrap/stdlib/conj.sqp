@@ -1,5 +1,5 @@
 (defn-file [seq v]
   (cond
     (set? seq) (internal-set-conj seq v)
-    (map? seq) (if (= (count v) 2) (assoc seq (first v) (second v)))
-    (vec? seq) (assoc seq (count seq) v)))
+    (map? seq) (if (= (bis/count v) 2) (assoc seq (first v) (second v)))
+    (vec? seq) (assoc seq (bis/count seq) v)))
