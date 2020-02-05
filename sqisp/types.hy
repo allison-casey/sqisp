@@ -1,5 +1,4 @@
 (import [pkg-resources [resource-stream resource-string resource-listdir]]
-        [pprint [pprint]]
         re)
 
 (setv --types {})

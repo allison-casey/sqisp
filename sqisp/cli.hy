@@ -53,8 +53,7 @@
 
           (output-path.parent.mkdir :parents True :exist-ok True)
           (with [fout (open output-path "w")]
-            (fout.write text)))
-      (print text)))
+            (fout.write text)))))
 
 (defn compile-macros
   [input-dir]

@@ -16,6 +16,8 @@
 (setv NEWLINE "\n"
       _model-compilers {str (fn [compiler scope s] s)}
       _special-form-compilers {}
+      _identity-symbols #{(SQFSymbol "true")
+                          (SQFSymbol "false")}
       _operator-lookup {"=" "isEqualTo"
                         "!=" "!="
                         "and" "&&"
@@ -56,10 +58,14 @@
 
   (defn lookup
     [self scope value]
-    (while True
-      (cond [(in value scope.name) (return (get scope.name value))]
-            [scope.parent (setv scope scope.parent)]
-            [True (return None)])))
+    (if (in value _identity-symbols)
+        value
+        (while True
+          (cond [(in value scope.name) (return (get scope.name value))]
+                [scope.parent (setv scope scope.parent)]
+                [True (raise
+                        (SyntaxError
+                          f"function {value} referenced before assignment."))]))))
 
   (defn insert
     [self scope key value]
@@ -91,11 +97,6 @@
     [self atom scope]
     ((get _model-compilers (type atom)) self scope atom))
 
-  ;; (defn compile-root
-  ;;   [self root]
-  ;;   (setv scope (self.symbol-table.scope-from self.symbol-table.global-scope))
-  ;;   (self.compile scope root))
-
   (defn compile
     [self tree &optional scope]
     (if-not scope
@@ -113,12 +114,13 @@
 
   (defn _mangle-global
     [self scope -name]
-    (.lstrip (self.compile -name scope) "_"))
+    ;; (self.compile -name scope)
+    (.lstrip  "_"))
 
   (defn _mangle-private
     [self scope -name]
-    (as-> scope $
-        (self.compile -name $)
+    (as-> -name $
+        ;; (self.compile -name $)
         (if (.startswith $ "_") $ (+ "_" $))))
 
   (defn compile-function-call
@@ -137,9 +139,7 @@
         (do
           (setv binding (self.symbol-table.lookup scope root)
                 sargs (str.join ", " sargs))
-          (if-not binding
-                  (raise (SyntaxError f"function {root} referenced before assignment."))
-                  f"([{sargs}] call {binding})"))))
+          f"([{sargs}] call {binding})")))
 
   (with-decorator
     (special "+" [(many FORM)])
@@ -324,17 +324,19 @@
           (raise (SyntaxError f"for takes 3 to 4 arguments {(len cond)} given.")))
 
       (setv new-scope (self.symbol-table.scope-from scope)
-            pred (lfor val pred (self.compile val scope))
-            iterator (self._mangle-private new-scope (get pred 0)))
+            iterator (get pred 0)
+            (, start end #* step) (lfor val (cut pred 1) (self.compile val scope))
+            step (if step (first step))
+            siterator (self._mangle-private new-scope iterator))
 
-      (self.symbol-table.insert new-scope (get pred 0) iterator)
+      (if (isinstance iterator SQFSymbol)
+          (self.symbol-table.insert new-scope iterator siterator))
 
-      (setv start (get pred 1)
-            end (get pred 2)
-            step (if (= (len pred) 4) (get pred 3))
+      (setv ;start (get pred 1)
+            ;end (get pred 2)
             body (self._compile-implicit-do new-scope body)
             sstep (if step f"step {step} " "")
-            buffer [f"for \"{iterator}\" from {start} to {end} {sstep}do"
+            buffer [f"for \"{siterator}\" from {start} to {end} {sstep}do"
                     "{"
                     body
                     "}"])
@@ -369,11 +371,11 @@
 
     (setv new-scope (self.symbol-table.scope-from scope)
           (, binding seq) initializer
-          binding (self.compile binding scope))
+          )
     (self.symbol-table.insert new-scope (get initializer 0) binding)
     (setv binding-expr (SQFExpression [(SQFSymbol "setv")
                                        (SQFSymbol binding)
-                                       (SQFSymbol "_x")])
+                                       (SQFSymbol "x")])
           seq (self.compile
                 (SQFExpression [(SQFSymbol "iter-items") seq])
                 new-scope)
