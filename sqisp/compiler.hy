@@ -78,20 +78,10 @@
           self._seperator (if pretty NEWLINE "")
           self.symbol-table (SymbolTable {(SQFSymbol "this") "_this"
                                           (SQFSymbol "x") "_x"})
-          self.can_use_stdlib True)
-    (load-macros)
+          self.can-use-stdlib True)
 
-    (when self.can_use_stdlib
-      (setv stdlib-fn-names (lfor path (importlib.resources.contents stdlib)
-                                  :if (in ".sqp" path)
-                                  (-> path Path (. stem))) )
-      (for [fn-name stdlib-fn-names]
-        (self.symbol-table.insert
-          self.symbol-table.global-scope
-          (SQFString fn-name)
-          (self._mangle-global
-            self.symbol-table.global-scope
-            (mangle-cfgfunc fn-name))))))
+    (load-macros)
+    (self._add-stdlib-to-scope))
 
   (defn compile-atom
     [self atom scope]
@@ -105,8 +95,34 @@
     (if (none? tree) (return None))
     (self.compile-atom tree scope))
 
+  (defn _compile-seq
+    [self scope &rest args]
+    (lfor arg args (self.compile arg scope)))
+
+  (defn _add-stdlib-to-scope [self]
+    "
+    Adds all of the standard library function names to the
+    file's global scope
+    "
+    (if-not self.can-use-stdlib (return))
+
+    (setv stdlib-fn-names (lfor path (importlib.resources.contents stdlib)
+                                :if (in ".sqp" path)
+                                (-> path Path (. stem))))
+    (for [fn-name stdlib-fn-names]
+      (self.symbol-table.insert
+        self.symbol-table.global-scope
+        (SQFString fn-name)
+        (self._mangle-global
+          self.symbol-table.global-scope
+          (mangle-cfgfunc fn-name)))))
+
+  ;; ----------------
+  ;; Compiler Helpers
+
   (defn _compile-implicit-do
     [self scope body]
+    "Compile `body` wrapped in a `do` expression"
     (setv expr (SQFExpression [(SQFSymbol "do") #* body])
           root (SQFSymbol "do"))
 
@@ -114,20 +130,20 @@
 
   (defn _mangle-global
     [self scope -name]
-    ;; (self.compile -name scope)
+    "SQF requires globally scoped variables not have a leading underscore"
     (.lstrip  "_"))
 
   (defn _mangle-private
     [self scope -name]
-    (as-> -name $
-        ;; (self.compile -name $)
-        (if (.startswith $ "_") $ (+ "_" $))))
+    "SQF requires private variables to have a leading underscore"
+    (if (.startswith -name "_")
+        -name
+        (+ "_" -name)))
 
   (defn compile-function-call
     [self scope root args]
     (setv sroot (self.compile root scope )
           sargs (lfor arg args (self.compile arg scope)))
-
 
     (if (builtin? sroot)
         (do
@@ -149,7 +165,7 @@
     (defn compile-math-expression
       [self scope expr root args]
       (setv sroot (str root)
-            sargs (lfor arg args (self.compile arg scope ))
+            sargs (self._compile-seq scope #* args)
             buff (.join f" {sroot} " sargs))
       f"({buff})"))
 
@@ -159,7 +175,7 @@
       [self scope expr root args]
       (setv sroot (self.compile root scope )
             sroot (get _operator-lookup sroot)
-            args (lfor arg args (self.compile arg scope)))
+            args (self._compile-seq scope #* args))
 
       (cond [(zero? (len args)) "true"]
             [(= (len args) 1) (get args 0)]
@@ -189,17 +205,18 @@
     (defn compile-math-expression
       [self scope expr root args]
       (setv sroot (get _operator-lookup (self.compile root scope))
-            sargs (lfor arg args (self.compile arg scope)))
+            sargs (self._compile-seq scope #* args))
 
       (if (= (len sargs) 1)
           "true"
           (do
             (setv buff [])
             (for [(, left right) (pairwise sargs)]
-              (setv left (self.compile left scope )
+              (setv left (self.compile left scope)
                     right (self.compile right scope))
               (buff.append f"({left} {sroot} {right})"))
             (str.join " && " buff)))))
+
   (with-decorator
     (special "reset!" [FORM FORM])
     (defn compile-reset-expression
@@ -269,7 +286,7 @@
       [self scope expr root body]
       (.join
         f"; {self._seperator}"
-        (gfor expression body (self.compile expression scope)))))
+        (self._compile-seq scope #* body))))
 
   (with-decorator
     (special "try" [(many FORM)])
@@ -325,16 +342,14 @@
 
       (setv new-scope (self.symbol-table.scope-from scope)
             iterator (get pred 0)
-            (, start end #* step) (lfor val (cut pred 1) (self.compile val scope))
+            (, start end #* step) (self._compile-seq scope #* (cut pred 1))
             step (if step (first step))
             siterator (self._mangle-private new-scope iterator))
 
       (if (isinstance iterator SQFSymbol)
           (self.symbol-table.insert new-scope iterator siterator))
 
-      (setv ;start (get pred 1)
-            ;end (get pred 2)
-            body (self._compile-implicit-do new-scope body)
+      (setv body (self._compile-implicit-do new-scope body)
             sstep (if step f"step {step} " "")
             buffer [f"for \"{siterator}\" from {start} to {end} {sstep}do"
                     "{"
@@ -370,8 +385,7 @@
           "Initializer must contain only the binding name and the sequence")))
 
     (setv new-scope (self.symbol-table.scope-from scope)
-          (, binding seq) initializer
-          )
+          (, binding seq) initializer)
     (self.symbol-table.insert new-scope (get initializer 0) binding)
     (setv binding-expr (SQFExpression [(SQFSymbol "setv")
                                        (SQFSymbol binding)
