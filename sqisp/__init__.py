@@ -16,12 +16,13 @@ from .compiler import SQFASTCompiler
 
 
 def compile(text, pretty=False, compiler=None):
-    load_types("types")
+    # load_types("types")
 
     tokens = parser.parse(lexer.lex(text),
                           state=ParserState())
-    ast = SQFExpression([SQFSymbol("do")] + tokens)
+    # ast = SQFExpression([SQFSymbol("do")] + tokens)
 
     compiler = compiler if compiler else SQFASTCompiler(pretty=pretty)
-    compiled_sqf = compiler.compile(ast)
+    # compiled_sqf = compiler.compile(ast)
+    compiled_sqf = compiler.compile(tokens)
     return compiled_sqf

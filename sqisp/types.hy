@@ -1,7 +1,7 @@
 (import [pkg-resources [resource-stream resource-string resource-listdir]]
         re)
 
-(setv --types {})
+(setv types {})
 
 (defn kebab->camel [s]
   (setv components (s.split "-"))
@@ -10,7 +10,7 @@
       (+ (.join "" (gfor x (cut components 1) (x.title))))))
 
 (defn builtin? [fn-name]
-  (in (re.sub "-" "" (.lower fn-name)) --types))
+  (in (re.sub "-" "" (.lower fn-name)) types))
 
 (defn get-base-fn-name [fn-name]
   (when (builtin? fn-name)
@@ -49,10 +49,10 @@
   (, f"bis/{key}" obj))
 
 (defn load-types [path]
-  (global --types)
+  (global types)
   (setv f (resource-stream --name-- "types"))
 
   (for [line f]
     (setv line (.decode line "utf-8")
           (, k v) (parse-line line)
-          (get --types k) v)))
+          (get types k) v)))

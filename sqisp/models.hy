@@ -1,6 +1,9 @@
 (defclass SQFObject [object]
   "sqfobject"
   []
+
+  (setv --properties-- ["start-line" "end-line" "start-column" "end-column"])
+
   (defn --repr-- [self]
     (.format "{}({})"
              (. self --class-- --name--)

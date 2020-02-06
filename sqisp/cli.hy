@@ -8,6 +8,7 @@
   [pathlib [Path]]
   [sqisp [compile]]
   [.formatter [format]]
+  [.types [load-types]]
   [.compiler [SQFASTCompiler]]
   [.macros [compile-macro-file]]
   [.bootstrap [stdlib]]
@@ -83,6 +84,7 @@
   (click.option "-n" "--no-stdlib" :is-flag True :help "If set, won't compile the stdlib.")
   (defn main
     [input output &optional [pretty False] [watch False] [no-stdlib False]]
+    (load-types "types")
     (setv input-path (Path input)
           output-path (Path (or output "."))
           stdlib? (not no-stdlib)

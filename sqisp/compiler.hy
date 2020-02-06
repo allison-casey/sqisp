@@ -93,7 +93,9 @@
             (setv scope
                   (self.symbol-table.scope-from self.symbol-table.global-scope)))
     (if (none? tree) (return None))
-    (self.compile-atom tree scope))
+    (if (isinstance tree list)
+        (self._compile-implicit-do scope tree)
+        (self.compile-atom tree scope)))
 
   (defn _compile-seq
     [self scope &rest args]
@@ -126,19 +128,19 @@
     (setv expr (SQFExpression [(SQFSymbol "do") #* body])
           root (SQFSymbol "do"))
 
-    (self.compile-do-expression scope expr root body))
+    (self.compile-do-expression scope expr root body :iife False))
 
   (defn _mangle-global
     [self scope -name]
     "SQF requires globally scoped variables not have a leading underscore"
-    (.lstrip  "_"))
+    (mangle (.lstrip  "_")))
 
   (defn _mangle-private
     [self scope -name]
     "SQF requires private variables to have a leading underscore"
-    (if (.startswith -name "_")
-        -name
-        (+ "_" -name)))
+    (mangle (if (.startswith -name "_")
+                -name
+                (+ "_" -name))))
 
   (defn compile-function-call
     [self scope root args]
@@ -153,7 +155,9 @@
                [(= (len args) 2) f"({(get sargs 0)} {sroot} {(get sargs 1)})"]
                [True f"({(get sargs 0)} {sroot} [{(.join \", \" (cut sargs 1))}])"]))
         (do
-          (setv binding (self.symbol-table.lookup scope root)
+          (setv binding (if (root.startswith "{")
+                            root
+                            (self.symbol-table.lookup scope root))
                 sargs (str.join ", " sargs))
           f"([{sargs}] call {binding})")))
 
@@ -283,10 +287,14 @@
   (with-decorator
     (special "do" [(many FORM)])
     (defn compile-do-expression
-      [self scope expr root body]
-      (.join
-        f"; {self._seperator}"
-        (self._compile-seq scope #* body))))
+      [self scope expr root body &optional [iife True]]
+      (if iife
+          (self.compile-expression
+            scope
+            (hy->sqf `((fn [] ~@body))))
+          (.join
+            f"; {self._seperator}"
+            (self._compile-seq scope #* body)))))
 
   (with-decorator
     (special "try" [(many FORM)])
@@ -449,13 +457,23 @@
       (if-not expr (raise (SyntaxError "Empty expression.")))
       (setv (, root #* args) (list expr)
             func None)
-      (when (isinstance root SQFSymbol)
-        (setv sroot (str root))
-        (if (in sroot _special-form-compilers)
-            (do (setv (, build-method pattern) (get _special-form-compilers sroot))
-                (try
-                  (setv parse-tree (pattern.parse args))
-                  (except [e NoParseError]
-                    (raise (SyntaxError "Parse error for form."))))
-                (build-method self scope expr sroot #* parse-tree))
-            (self.compile-function-call scope sroot args))))))
+      (cond
+        [(isinstance root SQFSymbol)
+         (do
+           (setv sroot (str root))
+           (if (in sroot _special-form-compilers)
+               (do (setv
+                     (, build-method pattern) (get _special-form-compilers sroot))
+                   (try
+                     (setv parse-tree (pattern.parse args))
+                     (except [e NoParseError]
+                       (raise (SyntaxError "Parse error for form."))))
+                   (build-method self scope expr sroot #* parse-tree))
+               (self.compile-function-call scope sroot args)))]
+        [(isinstance root SQFExpression)
+         (self.compile-function-call
+           scope
+           (self.compile-expression scope root)
+           args)]
+          )
+      )))
